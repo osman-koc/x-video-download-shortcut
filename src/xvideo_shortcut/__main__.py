@@ -7,6 +7,7 @@ from pathlib import Path
 
 from . import i18n
 from .flow import build_flow
+from .jelly import render as render_jelly
 from .model import Builder
 
 ICON_COLOR = 4282601983
@@ -26,7 +27,19 @@ def main(argv=None) -> int:
         default="dist/X-Video-Downloader.unsigned.shortcut",
         help="Output path (default: %(default)s)",
     )
+    parser.add_argument(
+        "--jelly",
+        metavar="PATH",
+        help="Write the Jellycuts script (Jelly language) instead of the .shortcut file.",
+    )
     args = parser.parse_args(argv)
+
+    if args.jelly:
+        out = Path(args.jelly)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(render_jelly(i18n.load_translations()), encoding="utf-8")
+        print(f"Wrote {out}. Paste it into the Jellycuts app and export to Shortcuts.")
+        return 0
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

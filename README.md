@@ -54,12 +54,17 @@ shortcuts sign --mode anyone \
 
 AirDrop the signed file to the iPhone. Alternatively, open the unsigned file in the Shortcuts app on macOS, which signs it on import, and let iCloud sync it.
 
+### Jellycuts script
+
+`jellycuts/X-Video-Downloader.jelly` is the same shortcut as a [Jellycuts](https://docs.jellycuts.com) script. Paste it into the Jellycuts app and export it to Shortcuts. It is generated from the same translations and constants (`PYTHONPATH=src python -m xvideo_shortcut --jelly jellycuts/X-Video-Downloader.jelly`); a test fails if the committed file is stale. Like the rest of the project it has not been run on a device.
+
 ### Project layout
 
 ```
 src/xvideo_shortcut/
   model.py          minimal .shortcut (binary plist) writer
   flow.py           the shortcut's logic, action by action
+  jelly.py          renders the same logic as a Jellycuts script
   i18n.py           loads translations
   translations/     one JSON file per language
 tests/              structure, link-pattern and translation tests

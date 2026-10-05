@@ -1,0 +1,124 @@
+import Shortcuts
+#Color: blue, #Icon: downloadArrow
+
+// Localization: English first, then overridden by the phone's language.
+var appName = "X Video Downloader"
+var askLink = "Paste the link of an X (Twitter) post with a video"
+var errInvalidLink = "That is not a valid X (Twitter) post link."
+var errNoVideo = "No video was found in this post. It may be private, deleted, or contain no video."
+var choosePrompt = "What do you want to do?"
+var optVideo = "Video"
+var optGif = "GIF"
+var optSticker = "WhatsApp sticker"
+var doneVideo = "Video saved to Photos."
+var doneGif = "GIF saved to Photos."
+var stickerHowto = "The clip was saved to Photos. In WhatsApp open a chat, tap the sticker button, create a new sticker from the saved clip and star it so it appears under Favorites."
+
+// The Gregorian era (AD, MS, n. Chr. ...) is spelled per locale, which reveals the language.
+formatDate(date: "${Current Date}", dStyle: Custom, tStyle: None, custom: "G") >> era
+if(era .contains "n. Chr") {
+    appName = "X Video Downloader"
+    askLink = "Füge den Link eines X-Beitrags (Twitter) mit Video ein"
+    errInvalidLink = "Das ist kein gültiger Link zu einem X-Beitrag (Twitter)."
+    errNoVideo = "In diesem Beitrag wurde kein Video gefunden. Er ist möglicherweise privat, gelöscht oder enthält kein Video."
+    choosePrompt = "Was möchtest du tun?"
+    optVideo = "Video"
+    optGif = "GIF"
+    optSticker = "WhatsApp-Sticker"
+    doneVideo = "Video in Fotos gesichert."
+    doneGif = "GIF in Fotos gesichert."
+    stickerHowto = "Der Clip wurde in Fotos gesichert. Öffne in WhatsApp einen Chat, tippe auf die Sticker-Taste, erstelle aus dem gesicherten Clip einen neuen Sticker und markiere ihn mit einem Stern, damit er unter Favoriten erscheint."
+}
+if(era .contains "d. C") {
+    appName = "Descargador de vídeos de X"
+    askLink = "Pega el enlace de una publicación de X (Twitter) con vídeo"
+    errInvalidLink = "Ese no es un enlace válido de una publicación de X (Twitter)."
+    errNoVideo = "No se encontró ningún vídeo en esta publicación. Puede ser privada, estar eliminada o no contener vídeo."
+    choosePrompt = "¿Qué quieres hacer?"
+    optVideo = "Vídeo"
+    optGif = "GIF"
+    optSticker = "Sticker de WhatsApp"
+    doneVideo = "Vídeo guardado en Fotos."
+    doneGif = "GIF guardado en Fotos."
+    stickerHowto = "El clip se guardó en Fotos. En WhatsApp abre un chat, toca el botón de stickers, crea un sticker nuevo con el clip guardado y márcalo con una estrella para que aparezca en Favoritos."
+}
+if(era .contains "ap. J") {
+    appName = "Téléchargeur vidéo X"
+    askLink = "Colle le lien d'une publication X (Twitter) contenant une vidéo"
+    errInvalidLink = "Ce n'est pas un lien valide vers une publication X (Twitter)."
+    errNoVideo = "Aucune vidéo n'a été trouvée dans cette publication. Elle est peut-être privée, supprimée ou sans vidéo."
+    choosePrompt = "Que veux-tu faire ?"
+    optVideo = "Vidéo"
+    optGif = "GIF"
+    optSticker = "Sticker WhatsApp"
+    doneVideo = "Vidéo enregistrée dans Photos."
+    doneGif = "GIF enregistré dans Photos."
+    stickerHowto = "Le clip a été enregistré dans Photos. Dans WhatsApp, ouvre une discussion, touche le bouton des stickers, crée un nouveau sticker à partir du clip enregistré et ajoute-le aux favoris avec une étoile."
+}
+if(era .contains "MS") {
+    appName = "X Video İndirici"
+    askLink = "Videolu bir X (Twitter) gönderisinin bağlantısını yapıştır"
+    errInvalidLink = "Bu geçerli bir X (Twitter) gönderi bağlantısı değil."
+    errNoVideo = "Bu gönderide video bulunamadı. Gönderi gizli, silinmiş veya videosuz olabilir."
+    choosePrompt = "Ne yapmak istiyorsun?"
+    optVideo = "Video"
+    optGif = "GIF"
+    optSticker = "WhatsApp çıkartması"
+    doneVideo = "Video Fotoğraflar'a kaydedildi."
+    doneGif = "GIF Fotoğraflar'a kaydedildi."
+    stickerHowto = "Klip Fotoğraflar'a kaydedildi. WhatsApp'ta bir sohbet aç, çıkartma düğmesine dokun, kaydedilen klipten yeni bir çıkartma oluştur ve Favoriler'de görünmesi için yıldızla."
+}
+
+// Post ID from the clipboard, or ask for a link.
+getClipboard() >> clip
+matchText(text: "${clip}", regex: "(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)[.]com/(?:[^/ ]+/)*?status(?:es)?/([0-9]+)", caseSensitive: false) >> firstMatch
+var matches = firstMatch
+if(matches == nil) {
+    askForInput(prompt: "${askLink}", type: Text) >> pasted
+    matchText(text: "${pasted}", regex: "(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)[.]com/(?:[^/ ]+/)*?status(?:es)?/([0-9]+)", caseSensitive: false) >> secondMatch
+    matches = secondMatch
+    if(matches == nil) {
+        alert(alert: "${errInvalidLink}", title: "${appName}", cancel: false)
+        exit()
+    }
+}
+getMatchGroup(type: Group At Index, matches: matches, index: "1") >> tweetId
+
+// FxTwitter returns the direct MP4 URL (X GIFs are MP4s too).
+downloadURL(url: "https://api.fxtwitter.com/status/${tweetId}", method: GET) >> response
+getDictionaryFrom(input: response) >> parsed
+var post = parsed.key(tweet)
+var mediaInfo = post.key(media)
+var videos = mediaInfo.key(videos)
+if(videos == nil) {
+    alert(alert: "${errNoVideo}", title: "${appName}", cancel: false)
+    exit()
+}
+getItemFromList(list: videos, type: First Item) >> firstVideo
+var videoURL = firstVideo.key(url)
+downloadURL(url: "${videoURL}", method: GET) >> video
+
+// Menu: Menu cases cannot contain variables, so use list + choose to stay localized.
+list(items: ["${optVideo}", "${optGif}", "${optSticker}"]) >> options
+choose(list: options, prompt: "${choosePrompt}") >> choice
+
+if(choice .contains "${optVideo}") {
+    saveToCameraRoll(image: video)
+    sendNotification(body: "${doneVideo}", title: "${appName}")
+}
+
+// The trim screen lets the user pick the section that becomes the GIF.
+if(choice .contains "${optGif}") {
+    trimVideo(video: video) >> gifClip
+    makeGIF(content: gifClip) >> gif
+    saveToCameraRoll(image: gif)
+    sendNotification(body: "${doneGif}", title: "${appName}")
+}
+
+// WhatsApp has no sticker automation: save a short clip, then hand over to WhatsApp.
+if(choice .contains "${optSticker}") {
+    trimVideo(video: video) >> stickerClip
+    saveToCameraRoll(image: stickerClip)
+    alert(alert: "${stickerHowto}", title: "${appName}", cancel: false)
+    openURL(url: "whatsapp://")
+}
