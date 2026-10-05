@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xvideo-shortcut"
+version = "0.1.0"
+description = "Generates an iOS Shortcut that downloads videos/GIFs from X (Twitter) posts."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+xvideo-shortcut = "xvideo_shortcut.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+xvideo_shortcut = ["translations/*.json"]

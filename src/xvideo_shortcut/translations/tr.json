@@ -1,0 +1,16 @@
+{
+  "_era_markers": [
+    "MS"
+  ],
+  "app_name": "X Video İndirici",
+  "ask_link": "Videolu bir X (Twitter) gönderisinin bağlantısını yapıştır",
+  "err_invalid_link": "Bu geçerli bir X (Twitter) gönderi bağlantısı değil.",
+  "err_no_video": "Bu gönderide video bulunamadı. Gönderi gizli, silinmiş veya videosuz olabilir.",
+  "choose_prompt": "Ne yapmak istiyorsun?",
+  "opt_video": "Video",
+  "opt_gif": "GIF",
+  "opt_sticker": "WhatsApp çıkartması",
+  "done_video": "Video Fotoğraflar'a kaydedildi.",
+  "done_gif": "GIF Fotoğraflar'a kaydedildi.",
+  "sticker_howto": "Klip Fotoğraflar'a kaydedildi. WhatsApp'ta bir sohbet aç, çıkartma düğmesine dokun, kaydedilen klipten yeni bir çıkartma oluştur ve Favoriler'de görünmesi için yıldızla."
+}

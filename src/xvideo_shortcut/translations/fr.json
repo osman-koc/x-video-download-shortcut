@@ -1,0 +1,16 @@
+{
+  "_era_markers": [
+    "ap. J"
+  ],
+  "app_name": "Téléchargeur vidéo X",
+  "ask_link": "Colle le lien d'une publication X (Twitter) contenant une vidéo",
+  "err_invalid_link": "Ce n'est pas un lien valide vers une publication X (Twitter).",
+  "err_no_video": "Aucune vidéo n'a été trouvée dans cette publication. Elle est peut-être privée, supprimée ou sans vidéo.",
+  "choose_prompt": "Que veux-tu faire ?",
+  "opt_video": "Vidéo",
+  "opt_gif": "GIF",
+  "opt_sticker": "Sticker WhatsApp",
+  "done_video": "Vidéo enregistrée dans Photos.",
+  "done_gif": "GIF enregistré dans Photos.",
+  "sticker_howto": "Le clip a été enregistré dans Photos. Dans WhatsApp, ouvre une discussion, touche le bouton des stickers, crée un nouveau sticker à partir du clip enregistré et ajoute-le aux favoris avec une étoile."
+}

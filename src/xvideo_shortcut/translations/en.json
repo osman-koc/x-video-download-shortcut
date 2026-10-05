@@ -1,0 +1,16 @@
+{
+  "_era_markers": [
+    "AD"
+  ],
+  "app_name": "X Video Downloader",
+  "ask_link": "Paste the link of an X (Twitter) post with a video",
+  "err_invalid_link": "That is not a valid X (Twitter) post link.",
+  "err_no_video": "No video was found in this post. It may be private, deleted, or contain no video.",
+  "choose_prompt": "What do you want to do?",
+  "opt_video": "Video",
+  "opt_gif": "GIF",
+  "opt_sticker": "WhatsApp sticker",
+  "done_video": "Video saved to Photos.",
+  "done_gif": "GIF saved to Photos.",
+  "sticker_howto": "The clip was saved to Photos. In WhatsApp open a chat, tap the sticker button, create a new sticker from the saved clip and star it so it appears under Favorites."
+}

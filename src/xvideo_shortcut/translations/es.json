@@ -1,0 +1,16 @@
+{
+  "_era_markers": [
+    "d. C"
+  ],
+  "app_name": "Descargador de vídeos de X",
+  "ask_link": "Pega el enlace de una publicación de X (Twitter) con vídeo",
+  "err_invalid_link": "Ese no es un enlace válido de una publicación de X (Twitter).",
+  "err_no_video": "No se encontró ningún vídeo en esta publicación. Puede ser privada, estar eliminada o no contener vídeo.",
+  "choose_prompt": "¿Qué quieres hacer?",
+  "opt_video": "Vídeo",
+  "opt_gif": "GIF",
+  "opt_sticker": "Sticker de WhatsApp",
+  "done_video": "Vídeo guardado en Fotos.",
+  "done_gif": "GIF guardado en Fotos.",
+  "sticker_howto": "El clip se guardó en Fotos. En WhatsApp abre un chat, toca el botón de stickers, crea un sticker nuevo con el clip guardado y márcalo con una estrella para que aparezca en Favoritos."
+}
