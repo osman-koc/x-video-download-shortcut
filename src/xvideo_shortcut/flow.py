@@ -132,17 +132,26 @@ def _fetch_video_url(b: Builder, s: Dict[str, Ref], tweet_id: Ref) -> Ref:
     parsed = b.add("detect.dictionary", {"WFInput": response.out.attachment()}, "Dictionary")
     post = _dict_value(b, parsed.out, "tweet")
     media = _dict_value(b, post, "media")
-    videos = b.set_var("videos", _dict_value(b, media, "videos"))
+    # `all` keeps the post's media in order; a post holds either photos or one video/GIF.
+    items = b.set_var("media_items", _dict_value(b, media, "all"))
 
-    with b.if_(videos, "Does Not Have Any Value"):
+    with b.if_(items, "Does Not Have Any Value"):
         _fail(b, s, "err_no_video")
 
     first = b.add(
         "getitemfromlist",
-        {"WFInput": videos.attachment(), "WFItemSpecifier": "First Item"},
+        {"WFInput": items.attachment(), "WFItemSpecifier": "First Item"},
         "Item from List",
     )
-    return b.set_var("video_url", _dict_value(b, first.out, "url"))
+    first_item = b.set_var("first_media", first.out)
+    kind = b.set_var("media_type", _dict_value(b, first_item, "type"))
+    with b.if_(kind, "Contains", "photo"):
+        _fail(b, s, "err_no_video")
+
+    video_url = b.set_var("video_url", _dict_value(b, first_item, "url"))
+    with b.if_(video_url, "Does Not Have Any Value"):
+        _fail(b, s, "err_no_video")
+    return video_url
 
 
 def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:

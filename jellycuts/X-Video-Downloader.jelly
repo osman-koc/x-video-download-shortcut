@@ -89,13 +89,22 @@ downloadURL(url: "https://api.fxtwitter.com/status/${tweetId}", method: GET, hea
 getDictionaryFrom(input: response) >> parsed
 var post = parsed.key(tweet)
 var mediaInfo = post.key(media)
-var videos = mediaInfo.key(videos)
-if(videos == nil) {
+var mediaItems = mediaInfo.key(all)
+if(mediaItems == nil) {
     alert(alert: "${errNoVideo}", title: "${appName}", cancel: false)
     exit()
 }
-getItemFromList(list: videos, type: First Item) >> firstVideo
-var videoURL = firstVideo.key(url)
+getItemFromList(list: mediaItems, type: First Item) >> firstMedia
+var mediaType = firstMedia.key(type)
+if(mediaType .contains "photo") {
+    alert(alert: "${errNoVideo}", title: "${appName}", cancel: false)
+    exit()
+}
+var videoURL = firstMedia.key(url)
+if(videoURL == nil) {
+    alert(alert: "${errNoVideo}", title: "${appName}", cancel: false)
+    exit()
+}
 downloadURL(url: "${videoURL}", method: GET, headers: {}, requestType: Json, requestJSON: {}) >> video
 
 // Menu: Menu cases cannot contain variables, so use list + choose to stay localized.
