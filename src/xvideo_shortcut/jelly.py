@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from . import i18n
-from .flow import API_URL, OPTION_KEYS, WHATSAPP_URL
+from .flow import API_URL, ID_AT_END_PATTERN, OPTION_KEYS, WHATSAPP_URL
 
 # Jelly strips backslashes from strings, so the pattern avoids \d, \s and \. .
 TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)[.]com/(?:[^/ ]+/)*?status(?:es)?/([0-9]+)"
@@ -70,7 +70,7 @@ def render(tables: Dict[str, Dict[str, object]]) -> str:
         *_fail("err_invalid_link", "        "),
         "    }",
         "}",
-        'getMatchGroup(type: Group At Index, matches: matches, index: "1") >> tweetId',
+        f'matchText(text: "${{matches}}", regex: {_lit(ID_AT_END_PATTERN)}, caseSensitive: false) >> tweetId',
         "",
         "// FxTwitter returns the direct MP4 URL (X GIFs are MP4s too).",
         f'downloadURL(url: "{API_URL}${{tweetId}}", method: GET, headers: {{}}, requestType: Json, requestJSON: {{}}) >> response',

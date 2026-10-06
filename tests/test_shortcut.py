@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from xvideo_shortcut import i18n  # noqa: E402
 from xvideo_shortcut.__main__ import build_shortcut  # noqa: E402
-from xvideo_shortcut.flow import OPTION_KEYS, TWEET_ID_PATTERN  # noqa: E402
+from xvideo_shortcut.flow import ID_AT_END_PATTERN, OPTION_KEYS, TWEET_ID_PATTERN  # noqa: E402
 
 
 def load_actions():
@@ -98,6 +98,11 @@ class TweetIdPattern(unittest.TestCase):
         }
         for link, expected in cases.items():
             self.assertEqual(self.match(link), expected, link)
+
+    def test_id_is_the_trailing_digits_of_the_match(self):
+        link = "https://x.com/the1rain/status/2095254064753733864/video/1"
+        whole = re.search(TWEET_ID_PATTERN, link, re.IGNORECASE).group(0)
+        self.assertEqual(re.search(ID_AT_END_PATTERN, whole).group(0), "2095254064753733864")
 
     def test_invalid_links(self):
         for text in ["", "hello", "https://example.com/user/status/123", "https://x.com/user", "https://x.com/user/status/abc"]:

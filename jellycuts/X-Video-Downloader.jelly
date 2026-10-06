@@ -82,7 +82,7 @@ if(matches == nil) {
         exit()
     }
 }
-getMatchGroup(type: Group At Index, matches: matches, index: "1") >> tweetId
+matchText(text: "${matches}", regex: "[0-9]+$", caseSensitive: false) >> tweetId
 
 // FxTwitter returns the direct MP4 URL (X GIFs are MP4s too).
 downloadURL(url: "https://api.fxtwitter.com/status/${tweetId}", method: GET, headers: {}, requestType: Json, requestJSON: {}) >> response

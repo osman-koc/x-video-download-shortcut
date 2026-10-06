@@ -15,6 +15,9 @@ WHATSAPP_URL = "whatsapp://"
 # including "i/status/<id>" and "i/web/status/<id>" forms.
 TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)\.com/(?:[^/\s]+/)*?status(?:es)?/(\d+)"
 
+# Applied to the text matched by TWEET_ID_PATTERN, which ends with the numeric ID.
+ID_AT_END_PATTERN = r"[0-9]+$"
+
 OPTION_KEYS = ("opt_video", "opt_gif", "opt_sticker")
 
 
@@ -113,16 +116,18 @@ def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
         with b.if_(Ref.variable("matches"), "Does Not Have Any Value"):
             _fail(b, s, "err_invalid_link")
 
-    group = b.add(
-        "text.match.getgroup",
+    # The match ends with the post ID, so a second match on its trailing digits yields it
+    # without relying on regex capture groups.
+    digits = b.add(
+        "text.match",
         {
-            "WFInput": Ref.variable("matches").attachment(),
-            "WFGetGroupType": "Group At Index",
-            "WFGroupIndex": 1,
+            "WFMatchTextPattern": ID_AT_END_PATTERN,
+            "WFMatchTextCaseSensitive": False,
+            "text": text(Ref.variable("matches")),
         },
-        "Group",
+        "Matches",
     )
-    tweet_id = b.set_var("tweet_id", group.out)
+    tweet_id = b.set_var("tweet_id", digits.out)
     b.trace("tweet_id", tweet_id)
     return tweet_id
 
