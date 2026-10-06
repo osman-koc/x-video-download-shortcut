@@ -8,7 +8,8 @@ from . import i18n
 from .model import Builder, Ref, new_uuid, text
 
 API_URL = "https://api.fxtwitter.com/status/"
-WHATSAPP_URL = "whatsapp://"
+WHATSAPP_URL = "whatsapp://"  # still used by the Jellycuts script
+WHATSAPP_BUNDLE_ID = "net.whatsapp.WhatsApp"
 
 # Finds the numeric post ID in x.com / twitter.com (and fx/vx mirror) links,
 # including "i/status/<id>" and "i/web/status/<id>" forms.
@@ -222,7 +223,13 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
             "WFAlertActionCancelButtonShown": False,
         },
     )
-    link = b.add("url", {"WFURLActionURL": WHATSAPP_URL}, "URL")
-    b.add("openurl", {"WFInput": link.out.attachment()})
+    # Open the regular WhatsApp by bundle ID; the whatsapp:// URL is also claimed by WhatsApp Business.
+    b.add(
+        "openapp",
+        {
+            "WFAppIdentifier": WHATSAPP_BUNDLE_ID,
+            "WFSelectedApp": {"BundleIdentifier": WHATSAPP_BUNDLE_ID, "Name": "WhatsApp"},
+        },
+    )
 
     menu.end()
