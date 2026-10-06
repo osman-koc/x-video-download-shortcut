@@ -95,7 +95,9 @@ def _extract_tweet_id(b: Builder, source: Ref) -> Ref:
 def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
     """Use the clipboard if it holds a post link, otherwise ask for one."""
     clipboard = b.set_var("clipboard", b.add("getclipboard", {}, "Clipboard").out)
-    matches = _extract_tweet_id(b, clipboard)
+    # The clipboard may hold a URL or rich text item; match against plain text.
+    clip_text = b.add("detect.text", {"WFInput": clipboard.attachment()}, "Text").out
+    matches = _extract_tweet_id(b, clip_text)
     b.set_var("matches", matches)
 
     with b.if_(Ref.variable("matches"), "Does Not Have Any Value"):
