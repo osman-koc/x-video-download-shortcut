@@ -69,6 +69,9 @@ def _localize(b: Builder, tables: Dict[str, Dict[str, object]]) -> Dict[str, Ref
     refs: Dict[str, Ref] = {}
     for key in i18n.string_keys(tables):
         refs[key] = b.set_var("s_" + key, _dict_value(b, table, key))
+    b.trace("era", era_var)
+    b.trace("lang", lang)
+    b.trace("app_name string", refs["app_name"])
     return refs
 
 
