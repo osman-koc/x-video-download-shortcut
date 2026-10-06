@@ -121,10 +121,11 @@ class Builder:
         self.actions: List[Action] = []
         self.debug = debug
 
-    def trace(self, label: str, value: Ref) -> None:
+    def trace(self, label: str, value: Optional[Ref] = None) -> None:
         """In debug builds, show `label: value` on screen (to find where a run goes wrong)."""
         if self.debug:
-            self.add("showresult", {"Text": text(label + ": ", value)})
+            shown = text(label + ": ", value) if value is not None else label
+            self.add("showresult", {"Text": shown})
 
     def add(self, name: str, params: Optional[Dict[str, Any]] = None, output_name: str = "Result") -> Action:
         action = Action(name, dict(params or {}), output_name)

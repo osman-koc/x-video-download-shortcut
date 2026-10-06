@@ -18,8 +18,6 @@ TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)\.com/(?:[^/\s]+/)*?
 ID_AT_END_PATTERN = r"[0-9]+$"
 
 OPTION_KEYS = ("opt_video", "opt_gif", "opt_sticker")
-ACTION_VIDEO, ACTION_GIF, ACTION_STICKER = "video", "gif", "sticker"
-ACTION_CODES = (ACTION_VIDEO, ACTION_GIF, ACTION_STICKER)
 
 
 def _dict_value(b: Builder, source: Ref, key) -> Ref:
@@ -155,33 +153,35 @@ def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:
     )
 
 
-def _choose_action(b: Builder, tables: Dict[str, Dict[str, object]]) -> Ref:
-    """Show the menu and store the choice as a fixed code in `action`."""
-    english = tables[i18n.DEFAULT_LANGUAGE]
-    group = new_uuid()
-    titles = [str(english[k]) for k in OPTION_KEYS]
-    b.add(
-        "choosefrommenu",
-        {
-            "GroupingIdentifier": group,
-            "WFControlFlowMode": 0,
-            "WFMenuPrompt": str(english["choose_prompt"]),
-            "WFMenuItems": titles,
-        },
-    )
-    for title, action_code in zip(titles, ACTION_CODES):
+class _Menu:
+    """Choose from Menu with one body per option (no conditions needed afterwards)."""
+
+    def __init__(self, b: Builder, prompt: str, titles):
+        self.b = b
+        self.group = new_uuid()
         b.add(
             "choosefrommenu",
-            {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
+            {
+                "GroupingIdentifier": self.group,
+                "WFControlFlowMode": 0,
+                "WFMenuPrompt": prompt,
+                "WFMenuItems": list(titles),
+            },
         )
-        b.add("gettext", {"WFTextActionText": action_code}, "Text")
-        b.set_var("action", b.actions[-1].out)
-    b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
-    return Ref.variable("action")
+
+    def case(self, title: str) -> None:
+        self.b.add(
+            "choosefrommenu",
+            {"GroupingIdentifier": self.group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
+        )
+
+    def end(self) -> None:
+        self.b.add("choosefrommenu", {"GroupingIdentifier": self.group, "WFControlFlowMode": 2})
 
 
 def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     s = _localize(b, tables)
+    english = tables[i18n.DEFAULT_LANGUAGE]
     tweet_id = _resolve_tweet_id(b, s)
     video_url = _fetch_video_url(b, s, tweet_id)
 
@@ -191,32 +191,38 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     )
     b.trace("video file", video)
 
-    action = _choose_action(b, tables)
-    b.trace("action", action)
+    titles = [str(english[k]) for k in OPTION_KEYS]
+    menu = _Menu(b, str(english["choose_prompt"]), titles)
 
-    with b.if_(action, "Contains", ACTION_VIDEO):
-        b.add("savetocameraroll", {"WFInput": video.attachment()})
-        _save_notification(b, s, "done_video")
+    menu.case(titles[0])  # Video
+    b.trace("branch: video")
+    b.add("savetocameraroll", {"WFInput": video.attachment()})
+    b.trace("saved to Photos")
+    _save_notification(b, s, "done_video")
 
-    with b.if_(action, "Contains", ACTION_GIF):
-        # The Trim Media screen lets the user pick the section that becomes the GIF.
-        trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
-        gif = b.add("makegif", {"WFInput": trimmed.out.attachment()}, "GIF")
-        b.add("savetocameraroll", {"WFInput": gif.out.attachment()})
-        _save_notification(b, s, "done_gif")
+    menu.case(titles[1])  # GIF
+    b.trace("branch: gif")
+    # The Trim Media screen lets the user pick the section that becomes the GIF.
+    trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
+    gif = b.add("makegif", {"WFInput": trimmed.out.attachment()}, "GIF")
+    b.add("savetocameraroll", {"WFInput": gif.out.attachment()})
+    _save_notification(b, s, "done_gif")
 
-    with b.if_(action, "Contains", ACTION_STICKER):
-        # WhatsApp offers no automation for its sticker library: save a short
-        # clip, then hand over to WhatsApp, where it is added once.
-        trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
-        b.add("savetocameraroll", {"WFInput": trimmed.out.attachment()})
-        b.add(
-            "alert",
-            {
-                "WFAlertActionTitle": text(s["app_name"]),
-                "WFAlertActionMessage": text(s["sticker_howto"]),
-                "WFAlertActionCancelButtonShown": False,
-            },
-        )
-        link = b.add("url", {"WFURLActionURL": WHATSAPP_URL}, "URL")
-        b.add("openurl", {"WFInput": link.out.attachment()})
+    menu.case(titles[2])  # WhatsApp sticker
+    b.trace("branch: sticker")
+    # WhatsApp offers no automation for its sticker library: save a short
+    # clip, then hand over to WhatsApp, where it is added once.
+    trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
+    b.add("savetocameraroll", {"WFInput": trimmed.out.attachment()})
+    b.add(
+        "alert",
+        {
+            "WFAlertActionTitle": text(s["app_name"]),
+            "WFAlertActionMessage": text(s["sticker_howto"]),
+            "WFAlertActionCancelButtonShown": False,
+        },
+    )
+    link = b.add("url", {"WFURLActionURL": WHATSAPP_URL}, "URL")
+    b.add("openurl", {"WFInput": link.out.attachment()})
+
+    menu.end()
