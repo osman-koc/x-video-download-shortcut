@@ -6,7 +6,7 @@ import json
 from typing import Dict
 
 from . import i18n
-from .model import Builder, Ref, text
+from .model import Builder, Ref, new_uuid, text
 
 API_URL = "https://api.fxtwitter.com/status/"
 WHATSAPP_URL = "whatsapp://"
@@ -19,6 +19,8 @@ TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)\.com/(?:[^/\s]+/)*?
 ID_AT_END_PATTERN = r"[0-9]+$"
 
 OPTION_KEYS = ("opt_video", "opt_gif", "opt_sticker")
+ACTION_VIDEO, ACTION_GIF, ACTION_STICKER = "video", "gif", "sticker"
+ACTION_CODES = (ACTION_VIDEO, ACTION_GIF, ACTION_STICKER)
 
 
 def _dict_value(b: Builder, source: Ref, key) -> Ref:
@@ -175,6 +177,37 @@ def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:
     )
 
 
+def _choose_action(b: Builder, tables: Dict[str, Dict[str, object]]) -> Ref:
+    """Show the menu in the phone's language and store the choice as a fixed code.
+
+    Menu titles must be literal text, so each language gets its own menu; all of them
+    write the same codes to `action`, which the rest of the shortcut branches on.
+    """
+    lang = Ref.variable("lang")
+    for code, table in tables.items():
+        with b.if_(lang, "Contains", code):
+            group = new_uuid()
+            titles = [str(table[k]) for k in OPTION_KEYS]
+            b.add(
+                "choosefrommenu",
+                {
+                    "GroupingIdentifier": group,
+                    "WFControlFlowMode": 0,
+                    "WFMenuPrompt": str(table["choose_prompt"]),
+                    "WFMenuItems": titles,
+                },
+            )
+            for title, action_code in zip(titles, ACTION_CODES):
+                b.add(
+                    "choosefrommenu",
+                    {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
+                )
+                b.add("gettext", {"WFTextActionText": action_code}, "Text")
+                b.set_var("action", b.actions[-1].out)
+            b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
+    return Ref.variable("action")
+
+
 def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     s = _localize(b, tables)
     tweet_id = _resolve_tweet_id(b, s)
@@ -186,30 +219,21 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     )
     b.trace("video file", video)
 
-    # One option per line, split into a list: avoids hand-writing List action items.
-    lines = []
-    for key in OPTION_KEYS:
-        lines += [s[key], "\n"]
-    b.add("gettext", {"WFTextActionText": text(*lines[:-1])}, "Text")
-    b.add("text.split", {"WFTextSeparator": "New Lines"}, "Split Text")
-    choice = b.set_var(
-        "choice",
-        b.add("choosefromlist", {"WFChooseFromListActionPrompt": text(s["choose_prompt"])}, "Chosen Item").out,
-    )
-    b.trace("choice", choice)
+    action = _choose_action(b, tables)
+    b.trace("action", action)
 
-    with b.if_(choice, "Contains", s["opt_video"]):
+    with b.if_(action, "Contains", ACTION_VIDEO):
         b.add("savetocameraroll", {"WFInput": video.attachment()})
         _save_notification(b, s, "done_video")
 
-    with b.if_(choice, "Contains", s["opt_gif"]):
+    with b.if_(action, "Contains", ACTION_GIF):
         # The Trim Media screen lets the user pick the section that becomes the GIF.
         trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
         gif = b.add("makegif", {"WFInput": trimmed.out.attachment()}, "GIF")
         b.add("savetocameraroll", {"WFInput": gif.out.attachment()})
         _save_notification(b, s, "done_gif")
 
-    with b.if_(choice, "Contains", s["opt_sticker"]):
+    with b.if_(action, "Contains", ACTION_STICKER):
         # WhatsApp offers no automation for its sticker library: save a short
         # clip, then hand over to WhatsApp, where it is added once.
         trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")

@@ -73,6 +73,16 @@ class PlistStructure(unittest.TestCase):
                     stack.pop()
         self.assertEqual(stack, [])
 
+    def test_menus_are_complete_and_set_the_action(self):
+        menus = {}
+        for a in self.actions:
+            if a["WFWorkflowActionIdentifier"].endswith(".choosefrommenu"):
+                p = a["WFWorkflowActionParameters"]
+                menus.setdefault(p["GroupingIdentifier"], []).append(p["WFControlFlowMode"])
+        self.assertEqual(len(menus), len(i18n.load_translations()))
+        for modes in menus.values():
+            self.assertEqual(modes, [0, 1, 1, 1, 2])
+
     def test_failures_stop_the_shortcut(self):
         ids = [a["WFWorkflowActionIdentifier"] for a in self.actions]
         for i, name in enumerate(ids):
