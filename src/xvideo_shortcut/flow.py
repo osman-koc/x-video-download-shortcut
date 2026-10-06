@@ -184,12 +184,19 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
         "video",
         b.add("downloadurl", {"WFURL": text(video_url), "WFHTTPMethod": "GET"}, "Contents of URL").out,
     )
+    b.trace("video file", video)
 
-    b.add("list", {"WFItems": [text(s[k]) for k in OPTION_KEYS]}, "List")
+    # One option per line, split into a list: avoids hand-writing List action items.
+    lines = []
+    for key in OPTION_KEYS:
+        lines += [s[key], "\n"]
+    b.add("gettext", {"WFTextActionText": text(*lines[:-1])}, "Text")
+    b.add("text.split", {"WFTextSeparator": "New Lines"}, "Split Text")
     choice = b.set_var(
         "choice",
         b.add("choosefromlist", {"WFChooseFromListActionPrompt": text(s["choose_prompt"])}, "Chosen Item").out,
     )
+    b.trace("choice", choice)
 
     with b.if_(choice, "Contains", s["opt_video"]):
         b.add("savetocameraroll", {"WFInput": video.attachment()})
