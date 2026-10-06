@@ -9,9 +9,13 @@
   Copy the post link, run the shortcut, done.
 </p>
 
+<p align="center">
+  <a href="https://www.icloud.com/shortcuts/48c9fcb7dbf34f48bce0a79a78532b22"><b>Add to Shortcuts</b></a>
+</p>
+
 ## Get the shortcut
 
-1. Open the shortcut link on your iPhone: **[Add to Shortcuts](#install)**
+1. Open this link on your iPhone: **[Add to Shortcuts](https://www.icloud.com/shortcuts/48c9fcb7dbf34f48bce0a79a78532b22)**
 2. Tap **Add Shortcut**.
 3. First run: allow network access (`api.fxtwitter.com`, `video.twimg.com`) and Photos access.
 
@@ -41,7 +45,7 @@ cd x-video-download-shortcut
 
 This writes `dist/X Video Downloader.shortcut`. Open it on the Mac, or AirDrop it to the iPhone. The file name is the shortcut's name in the Shortcuts app, so keep it as is.
 
-To share a one-tap install link, open the shortcut in the Shortcuts app, tap **Share > Copy iCloud Link**, and publish that link.
+The iCloud link above was made from a signed build: open the shortcut in the Shortcuts app, tap **Share > Copy iCloud Link**. If you rebuild the shortcut, update that link.
 
 ## Not supported
 
