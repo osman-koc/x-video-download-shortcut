@@ -9,8 +9,6 @@
   "choose_prompt": "Que veux-tu faire ?",
   "opt_video": "Vidéo",
   "opt_gif": "GIF",
-  "opt_sticker": "Sticker WhatsApp",
   "done_video": "Vidéo enregistrée dans Photos.",
-  "done_gif": "GIF enregistré dans Photos.",
-  "sticker_howto": "Le clip a été enregistré dans Photos. Dans WhatsApp, ouvre une discussion, touche le bouton des stickers, crée un nouveau sticker à partir du clip enregistré et ajoute-le aux favoris avec une étoile."
+  "done_gif": "GIF enregistré dans Photos."
 }

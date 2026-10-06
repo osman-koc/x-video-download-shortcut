@@ -9,8 +9,6 @@
   "choose_prompt": "Ne yapmak istiyorsun?",
   "opt_video": "Video",
   "opt_gif": "GIF",
-  "opt_sticker": "WhatsApp çıkartması",
   "done_video": "Video Fotoğraflar'a kaydedildi.",
-  "done_gif": "GIF Fotoğraflar'a kaydedildi.",
-  "sticker_howto": "Klip Fotoğraflar'a kaydedildi. WhatsApp'ta bir sohbet aç, çıkartma düğmesine dokun, kaydedilen klipten yeni bir çıkartma oluştur ve Favoriler'de görünmesi için yıldızla."
+  "done_gif": "GIF Fotoğraflar'a kaydedildi."
 }

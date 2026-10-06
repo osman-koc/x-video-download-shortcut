@@ -8,8 +8,6 @@ from . import i18n
 from .model import Builder, Ref, new_uuid, text
 
 API_URL = "https://api.fxtwitter.com/status/"
-WHATSAPP_URL = "whatsapp://"  # still used by the Jellycuts script
-WHATSAPP_BUNDLE_ID = "net.whatsapp.WhatsApp"
 
 # Finds the numeric post ID in x.com / twitter.com (and fx/vx mirror) links,
 # including "i/status/<id>" and "i/web/status/<id>" forms.
@@ -18,7 +16,7 @@ TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)\.com/(?:[^/\s]+/)*?
 # Applied to the text matched by TWEET_ID_PATTERN, which ends with the numeric ID.
 ID_AT_END_PATTERN = r"[0-9]+$"
 
-OPTION_KEYS = ("opt_video", "opt_gif", "opt_sticker")
+OPTION_KEYS = ("opt_video", "opt_gif")
 
 
 def _dict_value(b: Builder, source: Ref, key) -> Ref:
@@ -208,28 +206,5 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     gif = b.add("makegif", {"WFInput": trimmed.out.attachment()}, "GIF")
     b.add("savetocameraroll", {"WFInput": gif.out.attachment()})
     _save_notification(b, s, "done_gif")
-
-    menu.case(titles[2])  # WhatsApp sticker
-    b.trace("branch: sticker")
-    # WhatsApp offers no automation for its sticker library: save a short
-    # clip, then hand over to WhatsApp, where it is added once.
-    trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
-    b.add("savetocameraroll", {"WFInput": trimmed.out.attachment()})
-    b.add(
-        "alert",
-        {
-            "WFAlertActionTitle": text(s["app_name"]),
-            "WFAlertActionMessage": text(s["sticker_howto"]),
-            "WFAlertActionCancelButtonShown": False,
-        },
-    )
-    # Open the regular WhatsApp by bundle ID; the whatsapp:// URL is also claimed by WhatsApp Business.
-    b.add(
-        "openapp",
-        {
-            "WFAppIdentifier": WHATSAPP_BUNDLE_ID,
-            "WFSelectedApp": {"BundleIdentifier": WHATSAPP_BUNDLE_ID, "Name": "WhatsApp"},
-        },
-    )
 
     menu.end()

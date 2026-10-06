@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from . import i18n
-from .flow import API_URL, ID_AT_END_PATTERN, OPTION_KEYS, WHATSAPP_URL
+from .flow import API_URL, ID_AT_END_PATTERN, OPTION_KEYS
 
 # Jelly strips backslashes from strings, so the pattern avoids \d, \s and \. .
 TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)[.]com/(?:[^/ ]+/)*?status(?:es)?/([0-9]+)"
@@ -109,13 +109,6 @@ def render(tables: Dict[str, Dict[str, object]]) -> str:
         '    sendNotification(body: "${doneGif}", title: "${appName}")',
         "}",
         "",
-        "// WhatsApp has no sticker automation: save a short clip, then hand over to WhatsApp.",
-        'if(choice .contains "${optSticker}") {',
-        "    trimVideo(video: video) >> stickerClip",
-        "    saveToCameraRoll(image: stickerClip)",
-        '    alert(alert: "${stickerHowto}", title: "${appName}", cancel: false)',
-        f'    openURL(url: "{WHATSAPP_URL}")',
-        "}",
         "",
     ]
     return "\n".join(out)

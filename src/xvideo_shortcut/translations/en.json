@@ -9,8 +9,6 @@
   "choose_prompt": "What do you want to do?",
   "opt_video": "Video",
   "opt_gif": "GIF",
-  "opt_sticker": "WhatsApp sticker",
   "done_video": "Video saved to Photos.",
-  "done_gif": "GIF saved to Photos.",
-  "sticker_howto": "The clip was saved to Photos. In WhatsApp open a chat, tap the sticker button, create a new sticker from the saved clip and star it so it appears under Favorites."
+  "done_gif": "GIF saved to Photos."
 }

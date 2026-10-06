@@ -4,11 +4,10 @@ An iPhone shortcut that downloads the video of an X (Twitter) post. Copy the pos
 
 - **Video**: saved to Photos.
 - **GIF**: you choose the section to keep, it is converted and saved to Photos.
-- **WhatsApp sticker**: you trim a short clip, it is saved to Photos and WhatsApp opens so you can add it as a sticker.
 
-The shortcut is English only. Runtime language detection did not work reliably in Shortcuts, so it was dropped. Other translations are kept in the repo for a future localized build.
+The shortcut is English only. Runtime language detection did not work in Shortcuts, so it was dropped; other translations are kept in the repo for a possible localized build.
 
-> **Status:** the Mac run is verified up to the menu (clipboard, post ID, FxTwitter API, download, menu). Saving to Photos, GIF, WhatsApp sticker and everything on a physical iPhone are not tested yet. See [Known limitations](#known-limitations) and please open an issue if a step misbehaves.
+> **Status:** on an iPhone the clipboard link, post ID, FxTwitter API, download, menu and saving a video to Photos work. The GIF option is not tested yet. See [Known limitations](#known-limitations) and please open an issue if a step misbehaves.
 
 ## How it works
 
@@ -37,11 +36,10 @@ To troubleshoot, build with `--debug`: it shows the value of each key step (clip
 
 - **Video**: pick *Video*.
 - **GIF**: pick *GIF*, drag the handles in the trim screen to select the part to keep (shorter clips make smaller GIFs; a few seconds works best), confirm.
-- **WhatsApp sticker**: pick *WhatsApp sticker*, trim to about 6 seconds, confirm. WhatsApp opens. Create a sticker from the clip in Photos and star it. Starred stickers live under **Favorites**, so no separate sticker pack is created for each clip.
 
-### About WhatsApp stickers
+### WhatsApp stickers
 
-WhatsApp does not allow Shortcuts (or any other app) to add stickers silently, and the Shortcuts app cannot produce animated WebP. The shortcut therefore prepares the clip and opens WhatsApp; the final add is done by you in WhatsApp's own sticker editor. Animated stickers must be at most 512x512 px, about 10 s and 500 KB; WhatsApp does the conversion and cropping in its editor.
+Not supported. WhatsApp's own sticker maker on iPhone does not accept videos or GIFs, and Shortcuts cannot add stickers to WhatsApp. Animated stickers need a third-party sticker app. The shortcut only saves the video or GIF to Photos, which such apps can import.
 
 ## Build from source
 

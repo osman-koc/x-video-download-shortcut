@@ -9,8 +9,6 @@
   "choose_prompt": "¿Qué quieres hacer?",
   "opt_video": "Vídeo",
   "opt_gif": "GIF",
-  "opt_sticker": "Sticker de WhatsApp",
   "done_video": "Vídeo guardado en Fotos.",
-  "done_gif": "GIF guardado en Fotos.",
-  "sticker_howto": "El clip se guardó en Fotos. En WhatsApp abre un chat, toca el botón de stickers, crea un sticker nuevo con el clip guardado y márcalo con una estrella para que aparezca en Favoritos."
+  "done_gif": "GIF guardado en Fotos."
 }

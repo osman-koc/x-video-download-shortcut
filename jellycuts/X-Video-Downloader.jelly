@@ -9,10 +9,8 @@ var errNoVideo = "No video was found in this post. It may be private, deleted, o
 var choosePrompt = "What do you want to do?"
 var optVideo = "Video"
 var optGif = "GIF"
-var optSticker = "WhatsApp sticker"
 var doneVideo = "Video saved to Photos."
 var doneGif = "GIF saved to Photos."
-var stickerHowto = "The clip was saved to Photos. In WhatsApp open a chat, tap the sticker button, create a new sticker from the saved clip and star it so it appears under Favorites."
 
 // The Gregorian era (AD, MS, n. Chr. ...) is spelled per locale, which reveals the language.
 formatDate(date: "${Current Date}", dStyle: Custom, tStyle: None, custom: "G") >> era
@@ -24,10 +22,8 @@ if(era .contains "n. Chr") {
     choosePrompt = "Was möchtest du tun?"
     optVideo = "Video"
     optGif = "GIF"
-    optSticker = "WhatsApp-Sticker"
     doneVideo = "Video in Fotos gesichert."
     doneGif = "GIF in Fotos gesichert."
-    stickerHowto = "Der Clip wurde in Fotos gesichert. Öffne in WhatsApp einen Chat, tippe auf die Sticker-Taste, erstelle aus dem gesicherten Clip einen neuen Sticker und markiere ihn mit einem Stern, damit er unter Favoriten erscheint."
 }
 if(era .contains "d. C") {
     appName = "Descargador de vídeos de X"
@@ -37,10 +33,8 @@ if(era .contains "d. C") {
     choosePrompt = "¿Qué quieres hacer?"
     optVideo = "Vídeo"
     optGif = "GIF"
-    optSticker = "Sticker de WhatsApp"
     doneVideo = "Vídeo guardado en Fotos."
     doneGif = "GIF guardado en Fotos."
-    stickerHowto = "El clip se guardó en Fotos. En WhatsApp abre un chat, toca el botón de stickers, crea un sticker nuevo con el clip guardado y márcalo con una estrella para que aparezca en Favoritos."
 }
 if(era .contains "ap. J") {
     appName = "Téléchargeur vidéo X"
@@ -50,10 +44,8 @@ if(era .contains "ap. J") {
     choosePrompt = "Que veux-tu faire ?"
     optVideo = "Vidéo"
     optGif = "GIF"
-    optSticker = "Sticker WhatsApp"
     doneVideo = "Vidéo enregistrée dans Photos."
     doneGif = "GIF enregistré dans Photos."
-    stickerHowto = "Le clip a été enregistré dans Photos. Dans WhatsApp, ouvre une discussion, touche le bouton des stickers, crée un nouveau sticker à partir du clip enregistré et ajoute-le aux favoris avec une étoile."
 }
 if(era .contains "MS") {
     appName = "X Video İndirici"
@@ -63,10 +55,8 @@ if(era .contains "MS") {
     choosePrompt = "Ne yapmak istiyorsun?"
     optVideo = "Video"
     optGif = "GIF"
-    optSticker = "WhatsApp çıkartması"
     doneVideo = "Video Fotoğraflar'a kaydedildi."
     doneGif = "GIF Fotoğraflar'a kaydedildi."
-    stickerHowto = "Klip Fotoğraflar'a kaydedildi. WhatsApp'ta bir sohbet aç, çıkartma düğmesine dokun, kaydedilen klipten yeni bir çıkartma oluştur ve Favoriler'de görünmesi için yıldızla."
 }
 
 // Post ID from the clipboard, or ask for a link.
@@ -108,7 +98,7 @@ if(videoURL == nil) {
 downloadURL(url: "${videoURL}", method: GET, headers: {}, requestType: Json, requestJSON: {}) >> video
 
 // Menu: Menu cases cannot contain variables, so use list + choose to stay localized.
-list(items: ["${optVideo}", "${optGif}", "${optSticker}"]) >> options
+list(items: ["${optVideo}", "${optGif}"]) >> options
 choose(list: options, prompt: "${choosePrompt}") >> choice
 
 if(choice .contains "${optVideo}") {
@@ -124,10 +114,3 @@ if(choice .contains "${optGif}") {
     sendNotification(body: "${doneGif}", title: "${appName}")
 }
 
-// WhatsApp has no sticker automation: save a short clip, then hand over to WhatsApp.
-if(choice .contains "${optSticker}") {
-    trimVideo(video: video) >> stickerClip
-    saveToCameraRoll(image: stickerClip)
-    alert(alert: "${stickerHowto}", title: "${appName}", cancel: false)
-    openURL(url: "whatsapp://")
-}

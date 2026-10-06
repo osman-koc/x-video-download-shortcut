@@ -81,7 +81,7 @@ class PlistStructure(unittest.TestCase):
                 menus.setdefault(p["GroupingIdentifier"], []).append(p["WFControlFlowMode"])
         self.assertEqual(len(menus), 1)
         for modes in menus.values():
-            self.assertEqual(modes, [0, 1, 1, 1, 2])
+            self.assertEqual(modes, [0, 1, 1, 2])
 
     def test_failures_stop_the_shortcut(self):
         ids = [a["WFWorkflowActionIdentifier"] for a in self.actions]
