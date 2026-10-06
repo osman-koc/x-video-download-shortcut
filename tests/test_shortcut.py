@@ -79,8 +79,7 @@ class PlistStructure(unittest.TestCase):
             if a["WFWorkflowActionIdentifier"].endswith(".choosefrommenu"):
                 p = a["WFWorkflowActionParameters"]
                 menus.setdefault(p["GroupingIdentifier"], []).append(p["WFControlFlowMode"])
-        # One menu per language plus the English fallback.
-        self.assertEqual(len(menus), len(i18n.load_translations()) + 1)
+        self.assertEqual(len(menus), 1)
         for modes in menus.values():
             self.assertEqual(modes, [0, 1, 1, 1, 2])
 

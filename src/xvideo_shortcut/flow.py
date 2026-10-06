@@ -36,45 +36,16 @@ def _dict_value(b: Builder, source: Ref, key) -> Ref:
 
 
 def _localize(b: Builder, tables: Dict[str, Dict[str, object]]) -> Dict[str, Ref]:
-    """Pick the phone's language at runtime and expose each string as a variable.
+    """Expose each (English) string as a variable.
 
-    The era of the Gregorian calendar ("AD", "MS", "n. Chr." ...) is spelled
-    per locale but never changes with the date, so formatting today's date
-    with the era pattern reveals the device language. English is assigned
-    first and stays if no other language is recognized.
+    Runtime language detection was dropped: the shortcut is English only. The other
+    translation files are kept for a future localized build.
     """
-    keys = i18n.string_keys(tables)
     english = tables[i18n.DEFAULT_LANGUAGE]
-
-    def assign(table: Dict[str, object]) -> None:
-        for key in keys:
-            b.add("gettext", {"WFTextActionText": str(table[key])}, "Text")
-            b.set_var("s_" + key, b.actions[-1].out)
-
-    b.add("gettext", {"WFTextActionText": i18n.DEFAULT_LANGUAGE}, "Text")
-    lang = b.set_var("lang", b.actions[-1].out)
-    assign(english)
-
-    # Format Date takes today's date from the previous action.
-    b.add("date", {"WFDateActionMode": "Current Date"}, "Date")
-    era = b.add(
-        "format.date",
-        {"WFDateFormatStyle": "Custom", "WFDateFormat": "G"},
-        "Formatted Date",
-    )
-    era_var = b.set_var("era", era.out)
-
-    for code, table in tables.items():
-        if code == i18n.DEFAULT_LANGUAGE:
-            continue
-        for marker in i18n.era_markers(table):
-            with b.if_(era_var, "Contains", marker):
-                b.add("gettext", {"WFTextActionText": code}, "Text")
-                b.set_var("lang", b.actions[-1].out)
-                assign(table)
-
-    b.trace("era", era_var)
-    b.trace("lang", lang)
+    keys = i18n.string_keys(tables)
+    for key in keys:
+        b.add("gettext", {"WFTextActionText": str(english[key])}, "Text")
+        b.set_var("s_" + key, b.actions[-1].out)
     b.trace("app_name string", Ref.variable("s_app_name"))
     return {key: Ref.variable("s_" + key) for key in keys}
 
@@ -185,42 +156,28 @@ def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:
 
 
 def _choose_action(b: Builder, tables: Dict[str, Dict[str, object]]) -> Ref:
-    """Show the menu in the phone's language and store the choice as a fixed code.
-
-    Menu titles must be literal text, so each language gets its own menu; all of them
-    write the same codes to `action`, which the rest of the shortcut branches on.
-    """
-    def menu(table: Dict[str, object]) -> None:
-        group = new_uuid()
-        titles = [str(table[k]) for k in OPTION_KEYS]
+    """Show the menu and store the choice as a fixed code in `action`."""
+    english = tables[i18n.DEFAULT_LANGUAGE]
+    group = new_uuid()
+    titles = [str(english[k]) for k in OPTION_KEYS]
+    b.add(
+        "choosefrommenu",
+        {
+            "GroupingIdentifier": group,
+            "WFControlFlowMode": 0,
+            "WFMenuPrompt": str(english["choose_prompt"]),
+            "WFMenuItems": titles,
+        },
+    )
+    for title, action_code in zip(titles, ACTION_CODES):
         b.add(
             "choosefrommenu",
-            {
-                "GroupingIdentifier": group,
-                "WFControlFlowMode": 0,
-                "WFMenuPrompt": str(table["choose_prompt"]),
-                "WFMenuItems": titles,
-            },
+            {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
         )
-        for title, action_code in zip(titles, ACTION_CODES):
-            b.add(
-                "choosefrommenu",
-                {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
-            )
-            b.add("gettext", {"WFTextActionText": action_code}, "Text")
-            b.set_var("action", b.actions[-1].out)
-        b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
-
-    lang = Ref.variable("lang")
-    for code, table in tables.items():
-        with b.if_(lang, "Contains", code):
-            menu(table)
-
-    # Safety net: if no language branch matched, show the English menu.
-    action = Ref.variable("action")
-    with b.if_(action, "Does Not Have Any Value"):
-        menu(tables[i18n.DEFAULT_LANGUAGE])
-    return action
+        b.add("gettext", {"WFTextActionText": action_code}, "Text")
+        b.set_var("action", b.actions[-1].out)
+    b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
+    return Ref.variable("action")
 
 
 def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
