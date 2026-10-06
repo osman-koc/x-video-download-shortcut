@@ -85,7 +85,7 @@ if(matches == nil) {
 getMatchGroup(type: Group At Index, matches: matches, index: "1") >> tweetId
 
 // FxTwitter returns the direct MP4 URL (X GIFs are MP4s too).
-downloadURL(url: "https://api.fxtwitter.com/status/${tweetId}") >> response
+downloadURL(url: "https://api.fxtwitter.com/status/${tweetId}", method: GET, requestType: Json, requestJSON: {}) >> response
 getDictionaryFrom(input: response) >> parsed
 var post = parsed.key(tweet)
 var mediaInfo = post.key(media)
@@ -96,7 +96,7 @@ if(videos == nil) {
 }
 getItemFromList(list: videos, type: First Item) >> firstVideo
 var videoURL = firstVideo.key(url)
-downloadURL(url: "${videoURL}") >> video
+downloadURL(url: "${videoURL}", method: GET, requestType: Json, requestJSON: {}) >> video
 
 // Menu: Menu cases cannot contain variables, so use list + choose to stay localized.
 list(items: ["${optVideo}", "${optGif}", "${optSticker}"]) >> options
