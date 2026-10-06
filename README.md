@@ -1,89 +1,88 @@
-# X Video Downloader (iOS Shortcut)
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="X Video Downloader icon">
+</p>
 
-An iPhone shortcut that downloads the video of an X (Twitter) post and saves it to Photos. Copy the post link, run the shortcut, done.
+<h1 align="center">X Video Downloader</h1>
 
-The shortcut is English only. Runtime language detection did not work in Shortcuts, so it was dropped; other translations are kept in the repo for a possible localized build.
+<p align="center">
+  An iPhone shortcut that saves the video of an X (Twitter) post to Photos.<br>
+  Copy the post link, run the shortcut, done.
+</p>
 
-> **Status:** on an iPhone the clipboard link, post ID, FxTwitter API, download and saving the video to Photos work. See [Known limitations](#known-limitations) and please open an issue if a step misbehaves.
+## Get the shortcut
+
+1. Open the shortcut link on your iPhone: **[Add to Shortcuts](#install)**
+2. Tap **Add Shortcut**.
+3. First run: allow network access (`api.fxtwitter.com`, `video.twimg.com`) and Photos access.
+
+## How to use
+
+1. In the X app, tap the share icon below a post with a video, then **Copy link**.
+2. Run **X Video Downloader** (from the Shortcuts app, or add it to the Home Screen or Siri).
+3. The video is saved to Photos and a notification confirms it.
+
+If the clipboard has no X post link, the shortcut asks you to paste one. If iOS asks about pasting from the clipboard, choose **Allow Paste** (or Settings > Apps > Shortcuts > Paste from Other Apps > *Allow*).
 
 ## How it works
 
-1. Reads the clipboard and extracts the post ID from an `x.com` / `twitter.com` link. If the clipboard has no valid link, it asks you to paste one.
+1. Reads the clipboard and extracts the post ID from an `x.com` / `twitter.com` link.
 2. Queries the public [FxTwitter API](https://github.com/FxEmbed/FxEmbed/wiki/Status-Fetch-API) (`api.fxtwitter.com/status/<id>`) and reads `tweet.media.all[0].url`, a direct MP4. X "GIFs" are MP4s too.
 3. Downloads the MP4, saves it to Photos and shows a notification.
 
-How to copy the link on X: tap the share icon below the post, then **Copy link**.
-
 ## Install
 
-iOS refuses unsigned shortcuts, and signing needs a Mac signed into iCloud (`shortcuts sign` fails on GitHub's macOS runners with "you must be signed into iCloud"). So you build and sign locally:
+iOS only imports **signed** shortcuts, and signing needs a Mac signed into iCloud (`shortcuts sign` fails on CI runners with "you must be signed into iCloud"). Build and sign it yourself:
 
 ```sh
-PYTHONPATH=src python3 -m xvideo_shortcut
-shortcuts sign --mode anyone \
-  --input dist/X-Video-Downloader.unsigned.shortcut \
-  --output dist/X-Video-Downloader.shortcut
+git clone https://github.com/osman-koc/x-video-download-shortcut
+cd x-video-download-shortcut
+./scripts/build-and-sign.sh      # needs macOS and Python 3.9+
 ```
 
-AirDrop `dist/X-Video-Downloader.shortcut` to the iPhone and open it in the Shortcuts app. On first run allow network access (`api.fxtwitter.com`, `video.twimg.com`) and Photos access. If iOS asks about pasting from the clipboard, choose **Allow Paste** (or set it to *Allow* in Settings > Apps > Shortcuts > Paste from Other Apps).
+This writes `dist/X Video Downloader.shortcut`. Open it on the Mac, or AirDrop it to the iPhone. The file name is the shortcut's name in the Shortcuts app, so keep it as is.
 
-To troubleshoot, build with `--debug`: it shows the value of each key step (clipboard, post ID, API code, media URL, saved to Photos) in popups.
+To share a one-tap install link, open the shortcut in the Shortcuts app, tap **Share > Copy iCloud Link**, and publish that link.
 
-## Usage
+## Not supported
 
-Copy the link of an X post that has a video, then run the shortcut. The video appears in Photos.
-
-### Not supported
-
-- **GIF conversion**: saving the GIF to Photos did not work, so it was removed.
+- **GIF conversion**: saving a converted GIF to Photos did not work, so it was removed.
 - **WhatsApp stickers**: WhatsApp's sticker maker on iPhone does not accept videos or GIFs, and Shortcuts cannot add stickers to WhatsApp. Animated stickers need a third-party sticker app, which can import the saved video from Photos.
+- The shortcut is English only.
 
-## Build from source
+## Limitations
 
-Requires Python 3.9+ (no dependencies).
+- Depends on the third-party FxTwitter service. If it is down or changes its API the shortcut stops working (message: no video found).
+- Private, deleted or age-restricted posts cannot be fetched. For posts with several media items only the first is used, and photo-only posts are rejected.
+- Download only content you have the right to save. Respect the author's rights and X's terms.
+
+## Troubleshooting
+
+Build a debug version that shows the value of each step (clipboard, post ID, API code, media URL, saved) in popups:
 
 ```sh
-PYTHONPATH=src python -m xvideo_shortcut          # writes dist/X-Video-Downloader.unsigned.shortcut
-python -m unittest discover -s tests -v           # run tests
+PYTHONPATH=src python3 -m xvideo_shortcut --debug -o "dist/X Video Downloader.unsigned.shortcut"
 ```
 
-Sign on a Mac (also done automatically by the `Build and sign shortcut` workflow when you push a `v*` tag):
+Then sign it as above. Common cases: an empty `clipboard` popup means the copied link was replaced (do not copy popup text while testing); `api code: 404` means the post ID was not found.
+
+## Development
 
 ```sh
-shortcuts sign --mode anyone \
-  --input dist/X-Video-Downloader.unsigned.shortcut \
-  --output dist/X-Video-Downloader.shortcut
+python -m unittest discover -s tests -v    # run tests (Python 3.9+, no dependencies)
 ```
-
-AirDrop the signed file to the iPhone. Alternatively, open the unsigned file in the Shortcuts app on macOS, which signs it on import, and let iCloud sync it.
-
-### Jellycuts script
-
-`jellycuts/X-Video-Downloader.jelly` is the same shortcut as a [Jellycuts](https://docs.jellycuts.com) script. Paste it into the Jellycuts app and export it to Shortcuts. It is generated from the same translations and constants (`PYTHONPATH=src python -m xvideo_shortcut --jelly jellycuts/X-Video-Downloader.jelly`); a test fails if the committed file is stale. Like the rest of the project it has not been run on a device.
-
-### Project layout
 
 ```
 src/xvideo_shortcut/
-  model.py          minimal .shortcut (binary plist) writer
-  flow.py           the shortcut's logic, action by action
-  jelly.py          renders the same logic as a Jellycuts script
-  i18n.py           loads translations
-  translations/     one JSON file per language
-tests/              structure, link-pattern and translation tests
-.github/workflows/  CI: tests and an unsigned build artifact (signing needs a Mac)
+  model.py     minimal .shortcut (binary plist) writer
+  flow.py      the shortcut's logic, action by action
+  strings.py   user-facing messages
+scripts/       build-and-sign.sh (macOS)
+tests/         structure and link-pattern tests
+assets/        icon (SVG + PNG)
+.github/       CI: tests and an unsigned build artifact
 ```
 
-### Translations (not used by the shortcut yet)
-
-`src/xvideo_shortcut/translations/*.json` hold strings per language. The shortcut currently reads only `en.json`; the Jellycuts script still embeds all of them. Tests check that every language has every key.
-
-## Known limitations
-
-- Not yet verified on a real device; action parameters were written from the Shortcuts file format and may need adjustment on some iOS versions.
-- Depends on the third-party FxTwitter service. If it is down or changes its API the shortcut stops working (error message: no video found).
-- Private, deleted or age-restricted posts cannot be fetched. For posts with several videos only the first is used.
-- Download only content you have the right to save. Respect the author's rights and X's terms.
+The Shortcuts app has no file format documentation; action parameters were written from the format as observed and checked on a device, so a future iOS release may need adjustments.
 
 ## License
 

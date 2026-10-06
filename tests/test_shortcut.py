@@ -7,7 +7,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from xvideo_shortcut import i18n  # noqa: E402
 from xvideo_shortcut.__main__ import build_shortcut  # noqa: E402
 from xvideo_shortcut.flow import ID_AT_END_PATTERN, TWEET_ID_PATTERN  # noqa: E402
 
@@ -114,25 +113,6 @@ class TweetIdPattern(unittest.TestCase):
             self.assertIsNone(self.match(text), text)
 
 
-class Translations(unittest.TestCase):
-    def setUp(self):
-        self.tables = i18n.load_translations()
-
-    def test_all_languages_have_all_keys(self):
-        keys = set(i18n.string_keys(self.tables))
-        for code, table in self.tables.items():
-            self.assertEqual(set(table) - {i18n.MARKER_KEY}, keys, code)
-            self.assertTrue(i18n.era_markers(table), code)
-
-    def test_era_markers_are_unique_across_languages(self):
-        markers = [m for t in self.tables.values() for m in i18n.era_markers(t)]
-        self.assertEqual(len(markers), len(set(markers)))
-        for a in markers:
-            for b in markers:
-                if a != b:
-                    self.assertNotIn(a, b)
-
-
 class ApiShape(unittest.TestCase):
     """The shortcut reads tweet -> media -> videos[0] -> url."""
 
@@ -149,34 +129,3 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class JellyScript(unittest.TestCase):
-    def setUp(self):
-        from xvideo_shortcut.jelly import TWEET_ID_PATTERN as JELLY_PATTERN, render
-
-        self.tables = i18n.load_translations()
-        self.script = render(self.tables)
-        self.pattern = JELLY_PATTERN
-
-    def test_committed_script_is_up_to_date(self):
-        path = Path(__file__).resolve().parents[1] / "jellycuts" / "X-Video-Downloader.jelly"
-        self.assertEqual(path.read_text(encoding="utf-8"), self.script)
-
-    def test_every_translation_is_embedded(self):
-        for table in self.tables.values():
-            for key in i18n.string_keys(self.tables):
-                self.assertIn(str(table[key]).replace('"', '\\"'), self.script)
-
-    def test_braces_balance_and_no_backslash_regex(self):
-        self.assertEqual(self.script.count("{"), self.script.count("}"))
-        self.assertNotIn("\\d", self.pattern)
-        self.assertNotIn("\\s", self.pattern)
-
-    def test_pattern_matches_post_links(self):
-        rx = re.compile(self.pattern, re.IGNORECASE)
-        for url in (
-            "https://x.com/user/status/1234567890?s=20",
-            "https://twitter.com/i/web/status/42",
-            "https://fxtwitter.com/a/status/7",
-        ):
-            self.assertIsNotNone(rx.search(url), url)
-        self.assertIsNone(rx.search("https://example.com/status/1"))

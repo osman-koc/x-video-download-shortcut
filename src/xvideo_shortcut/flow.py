@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Dict
 
-from . import i18n
+from .strings import STRINGS
 from .model import Builder, Ref, text
 
 API_URL = "https://api.fxtwitter.com/status/"
@@ -31,19 +31,12 @@ def _dict_value(b: Builder, source: Ref, key) -> Ref:
     return action.out
 
 
-def _localize(b: Builder, tables: Dict[str, Dict[str, object]]) -> Dict[str, Ref]:
-    """Expose each (English) string as a variable.
-
-    Runtime language detection was dropped: the shortcut is English only. The other
-    translation files are kept for a future localized build.
-    """
-    english = tables[i18n.DEFAULT_LANGUAGE]
-    keys = i18n.string_keys(tables)
-    for key in keys:
-        b.add("gettext", {"WFTextActionText": str(english[key])}, "Text")
+def _load_strings(b: Builder) -> Dict[str, Ref]:
+    """Expose each message as a variable (Shortcuts text parameters reference variables)."""
+    for key, value in STRINGS.items():
+        b.add("gettext", {"WFTextActionText": value}, "Text")
         b.set_var("s_" + key, b.actions[-1].out)
-    b.trace("app_name string", Ref.variable("s_app_name"))
-    return {key: Ref.variable("s_" + key) for key in keys}
+    return {key: Ref.variable("s_" + key) for key in STRINGS}
 
 
 def _fail(b: Builder, s: Dict[str, Ref], message_key: str) -> None:
@@ -151,8 +144,8 @@ def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:
     )
 
 
-def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
-    s = _localize(b, tables)
+def build_flow(b: Builder) -> None:
+    s = _load_strings(b)
     tweet_id = _resolve_tweet_id(b, s)
     video_url = _fetch_video_url(b, s, tweet_id)
 

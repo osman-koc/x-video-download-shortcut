@@ -1,0 +1,9 @@
+"""User-facing text of the shortcut (English only)."""
+
+STRINGS = {
+    "app_name": "X Video Downloader",
+    "ask_link": "Paste the link of an X (Twitter) post with a video",
+    "err_invalid_link": "That is not a valid X (Twitter) post link.",
+    "err_no_video": "No video was found in this post. It may be private, deleted, or contain no video.",
+    "done_video": "Video saved to Photos.",
+}
