@@ -6,9 +6,5 @@
   "ask_link": "Paste the link of an X (Twitter) post with a video",
   "err_invalid_link": "That is not a valid X (Twitter) post link.",
   "err_no_video": "No video was found in this post. It may be private, deleted, or contain no video.",
-  "choose_prompt": "What do you want to do?",
-  "opt_video": "Video",
-  "opt_gif": "GIF",
-  "done_video": "Video saved to Photos.",
-  "done_gif": "GIF saved to Photos."
+  "done_video": "Video saved to Photos."
 }

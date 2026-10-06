@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from . import i18n
-from .flow import API_URL, ID_AT_END_PATTERN, OPTION_KEYS
+from .flow import API_URL, ID_AT_END_PATTERN
 
 # Jelly strips backslashes from strings, so the pattern avoids \d, \s and \. .
 TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)[.]com/(?:[^/ ]+/)*?status(?:es)?/([0-9]+)"
@@ -92,23 +92,8 @@ def render(tables: Dict[str, Dict[str, object]]) -> str:
         "}",
         'downloadURL(url: "${videoURL}", method: GET, headers: {}, requestType: Json, requestJSON: {}) >> video',
         "",
-        "// Menu: Menu cases cannot contain variables, so use list + choose to stay localized.",
-        "list(items: [" + ", ".join(f'"${{{_camel(k)}}}"' for k in OPTION_KEYS) + "]) >> options",
-        'choose(list: options, prompt: "${choosePrompt}") >> choice',
-        "",
-        'if(choice .contains "${optVideo}") {',
-        "    saveToCameraRoll(image: video)",
-        '    sendNotification(body: "${doneVideo}", title: "${appName}")',
-        "}",
-        "",
-        "// The trim screen lets the user pick the section that becomes the GIF.",
-        'if(choice .contains "${optGif}") {',
-        "    trimVideo(video: video) >> gifClip",
-        "    makeGIF(content: gifClip) >> gif",
-        "    saveToCameraRoll(image: gif)",
-        '    sendNotification(body: "${doneGif}", title: "${appName}")',
-        "}",
-        "",
+        "saveToCameraRoll(image: video)",
+        'sendNotification(body: "${doneVideo}", title: "${appName}")',
         "",
     ]
     return "\n".join(out)

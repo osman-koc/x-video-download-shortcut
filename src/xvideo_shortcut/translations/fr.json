@@ -6,9 +6,5 @@
   "ask_link": "Colle le lien d'une publication X (Twitter) contenant une vidéo",
   "err_invalid_link": "Ce n'est pas un lien valide vers une publication X (Twitter).",
   "err_no_video": "Aucune vidéo n'a été trouvée dans cette publication. Elle est peut-être privée, supprimée ou sans vidéo.",
-  "choose_prompt": "Que veux-tu faire ?",
-  "opt_video": "Vidéo",
-  "opt_gif": "GIF",
-  "done_video": "Vidéo enregistrée dans Photos.",
-  "done_gif": "GIF enregistré dans Photos."
+  "done_video": "Vidéo enregistrée dans Photos."
 }

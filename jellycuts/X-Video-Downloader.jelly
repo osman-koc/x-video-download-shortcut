@@ -6,11 +6,7 @@ var appName = "X Video Downloader"
 var askLink = "Paste the link of an X (Twitter) post with a video"
 var errInvalidLink = "That is not a valid X (Twitter) post link."
 var errNoVideo = "No video was found in this post. It may be private, deleted, or contain no video."
-var choosePrompt = "What do you want to do?"
-var optVideo = "Video"
-var optGif = "GIF"
 var doneVideo = "Video saved to Photos."
-var doneGif = "GIF saved to Photos."
 
 // The Gregorian era (AD, MS, n. Chr. ...) is spelled per locale, which reveals the language.
 formatDate(date: "${Current Date}", dStyle: Custom, tStyle: None, custom: "G") >> era
@@ -19,44 +15,28 @@ if(era .contains "n. Chr") {
     askLink = "Füge den Link eines X-Beitrags (Twitter) mit Video ein"
     errInvalidLink = "Das ist kein gültiger Link zu einem X-Beitrag (Twitter)."
     errNoVideo = "In diesem Beitrag wurde kein Video gefunden. Er ist möglicherweise privat, gelöscht oder enthält kein Video."
-    choosePrompt = "Was möchtest du tun?"
-    optVideo = "Video"
-    optGif = "GIF"
     doneVideo = "Video in Fotos gesichert."
-    doneGif = "GIF in Fotos gesichert."
 }
 if(era .contains "d. C") {
     appName = "Descargador de vídeos de X"
     askLink = "Pega el enlace de una publicación de X (Twitter) con vídeo"
     errInvalidLink = "Ese no es un enlace válido de una publicación de X (Twitter)."
     errNoVideo = "No se encontró ningún vídeo en esta publicación. Puede ser privada, estar eliminada o no contener vídeo."
-    choosePrompt = "¿Qué quieres hacer?"
-    optVideo = "Vídeo"
-    optGif = "GIF"
     doneVideo = "Vídeo guardado en Fotos."
-    doneGif = "GIF guardado en Fotos."
 }
 if(era .contains "ap. J") {
     appName = "Téléchargeur vidéo X"
     askLink = "Colle le lien d'une publication X (Twitter) contenant une vidéo"
     errInvalidLink = "Ce n'est pas un lien valide vers une publication X (Twitter)."
     errNoVideo = "Aucune vidéo n'a été trouvée dans cette publication. Elle est peut-être privée, supprimée ou sans vidéo."
-    choosePrompt = "Que veux-tu faire ?"
-    optVideo = "Vidéo"
-    optGif = "GIF"
     doneVideo = "Vidéo enregistrée dans Photos."
-    doneGif = "GIF enregistré dans Photos."
 }
 if(era .contains "MS") {
     appName = "X Video İndirici"
     askLink = "Videolu bir X (Twitter) gönderisinin bağlantısını yapıştır"
     errInvalidLink = "Bu geçerli bir X (Twitter) gönderi bağlantısı değil."
     errNoVideo = "Bu gönderide video bulunamadı. Gönderi gizli, silinmiş veya videosuz olabilir."
-    choosePrompt = "Ne yapmak istiyorsun?"
-    optVideo = "Video"
-    optGif = "GIF"
     doneVideo = "Video Fotoğraflar'a kaydedildi."
-    doneGif = "GIF Fotoğraflar'a kaydedildi."
 }
 
 // Post ID from the clipboard, or ask for a link.
@@ -97,20 +77,5 @@ if(videoURL == nil) {
 }
 downloadURL(url: "${videoURL}", method: GET, headers: {}, requestType: Json, requestJSON: {}) >> video
 
-// Menu: Menu cases cannot contain variables, so use list + choose to stay localized.
-list(items: ["${optVideo}", "${optGif}"]) >> options
-choose(list: options, prompt: "${choosePrompt}") >> choice
-
-if(choice .contains "${optVideo}") {
-    saveToCameraRoll(image: video)
-    sendNotification(body: "${doneVideo}", title: "${appName}")
-}
-
-// The trim screen lets the user pick the section that becomes the GIF.
-if(choice .contains "${optGif}") {
-    trimVideo(video: video) >> gifClip
-    makeGIF(content: gifClip) >> gif
-    saveToCameraRoll(image: gif)
-    sendNotification(body: "${doneGif}", title: "${appName}")
-}
-
+saveToCameraRoll(image: video)
+sendNotification(body: "${doneVideo}", title: "${appName}")

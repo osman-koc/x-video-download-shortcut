@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Dict
 
 from . import i18n
-from .model import Builder, Ref, new_uuid, text
+from .model import Builder, Ref, text
 
 API_URL = "https://api.fxtwitter.com/status/"
 
@@ -16,7 +16,6 @@ TWEET_ID_PATTERN = r"(?:^|[/.])(?:fx|vx|fixup)?(?:twitter|x)\.com/(?:[^/\s]+/)*?
 # Applied to the text matched by TWEET_ID_PATTERN, which ends with the numeric ID.
 ID_AT_END_PATTERN = r"[0-9]+$"
 
-OPTION_KEYS = ("opt_video", "opt_gif")
 
 
 def _dict_value(b: Builder, source: Ref, key) -> Ref:
@@ -152,35 +151,8 @@ def _save_notification(b: Builder, s: Dict[str, Ref], key: str) -> None:
     )
 
 
-class _Menu:
-    """Choose from Menu with one body per option (no conditions needed afterwards)."""
-
-    def __init__(self, b: Builder, prompt: str, titles):
-        self.b = b
-        self.group = new_uuid()
-        b.add(
-            "choosefrommenu",
-            {
-                "GroupingIdentifier": self.group,
-                "WFControlFlowMode": 0,
-                "WFMenuPrompt": prompt,
-                "WFMenuItems": list(titles),
-            },
-        )
-
-    def case(self, title: str) -> None:
-        self.b.add(
-            "choosefrommenu",
-            {"GroupingIdentifier": self.group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
-        )
-
-    def end(self) -> None:
-        self.b.add("choosefrommenu", {"GroupingIdentifier": self.group, "WFControlFlowMode": 2})
-
-
 def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     s = _localize(b, tables)
-    english = tables[i18n.DEFAULT_LANGUAGE]
     tweet_id = _resolve_tweet_id(b, s)
     video_url = _fetch_video_url(b, s, tweet_id)
 
@@ -190,21 +162,6 @@ def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
     )
     b.trace("video file", video)
 
-    titles = [str(english[k]) for k in OPTION_KEYS]
-    menu = _Menu(b, str(english["choose_prompt"]), titles)
-
-    menu.case(titles[0])  # Video
-    b.trace("branch: video")
     b.add("savetocameraroll", {"WFInput": video.attachment()})
     b.trace("saved to Photos")
     _save_notification(b, s, "done_video")
-
-    menu.case(titles[1])  # GIF
-    b.trace("branch: gif")
-    # The Trim Media screen lets the user pick the section that becomes the GIF.
-    trimmed = b.add("trimvideo", {"WFInput": video.attachment()}, "Trimmed Media")
-    gif = b.add("makegif", {"WFInput": trimmed.out.attachment()}, "GIF")
-    b.add("savetocameraroll", {"WFInput": gif.out.attachment()})
-    _save_notification(b, s, "done_gif")
-
-    menu.end()

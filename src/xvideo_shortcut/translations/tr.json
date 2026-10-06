@@ -6,9 +6,5 @@
   "ask_link": "Videolu bir X (Twitter) gönderisinin bağlantısını yapıştır",
   "err_invalid_link": "Bu geçerli bir X (Twitter) gönderi bağlantısı değil.",
   "err_no_video": "Bu gönderide video bulunamadı. Gönderi gizli, silinmiş veya videosuz olabilir.",
-  "choose_prompt": "Ne yapmak istiyorsun?",
-  "opt_video": "Video",
-  "opt_gif": "GIF",
-  "done_video": "Video Fotoğraflar'a kaydedildi.",
-  "done_gif": "GIF Fotoğraflar'a kaydedildi."
+  "done_video": "Video Fotoğraflar'a kaydedildi."
 }

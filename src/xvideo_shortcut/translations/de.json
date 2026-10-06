@@ -6,9 +6,5 @@
   "ask_link": "Füge den Link eines X-Beitrags (Twitter) mit Video ein",
   "err_invalid_link": "Das ist kein gültiger Link zu einem X-Beitrag (Twitter).",
   "err_no_video": "In diesem Beitrag wurde kein Video gefunden. Er ist möglicherweise privat, gelöscht oder enthält kein Video.",
-  "choose_prompt": "Was möchtest du tun?",
-  "opt_video": "Video",
-  "opt_gif": "GIF",
-  "done_video": "Video in Fotos gesichert.",
-  "done_gif": "GIF in Fotos gesichert."
+  "done_video": "Video in Fotos gesichert."
 }

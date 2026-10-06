@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from xvideo_shortcut import i18n  # noqa: E402
 from xvideo_shortcut.__main__ import build_shortcut  # noqa: E402
-from xvideo_shortcut.flow import ID_AT_END_PATTERN, OPTION_KEYS, TWEET_ID_PATTERN  # noqa: E402
+from xvideo_shortcut.flow import ID_AT_END_PATTERN, TWEET_ID_PATTERN  # noqa: E402
 
 
 def load_actions():
@@ -73,15 +73,10 @@ class PlistStructure(unittest.TestCase):
                     stack.pop()
         self.assertEqual(stack, [])
 
-    def test_menus_are_complete_and_set_the_action(self):
-        menus = {}
-        for a in self.actions:
-            if a["WFWorkflowActionIdentifier"].endswith(".choosefrommenu"):
-                p = a["WFWorkflowActionParameters"]
-                menus.setdefault(p["GroupingIdentifier"], []).append(p["WFControlFlowMode"])
-        self.assertEqual(len(menus), 1)
-        for modes in menus.values():
-            self.assertEqual(modes, [0, 1, 1, 2])
+    def test_saves_the_video_to_photos(self):
+        ids = [a["WFWorkflowActionIdentifier"].rsplit(".", 1)[-1] for a in self.actions]
+        self.assertIn("savetocameraroll", ids)
+        self.assertNotIn("choosefrommenu", ids)
 
     def test_failures_stop_the_shortcut(self):
         ids = [a["WFWorkflowActionIdentifier"] for a in self.actions]
@@ -128,15 +123,6 @@ class Translations(unittest.TestCase):
         for code, table in self.tables.items():
             self.assertEqual(set(table) - {i18n.MARKER_KEY}, keys, code)
             self.assertTrue(i18n.era_markers(table), code)
-
-    def test_option_labels_do_not_overlap(self):
-        # The shortcut matches the chosen item with "Contains".
-        for code, table in self.tables.items():
-            labels = [table[k] for k in OPTION_KEYS]
-            for a in labels:
-                for b in labels:
-                    if a is not b:
-                        self.assertNotIn(a.lower(), b.lower(), code)
 
     def test_era_markers_are_unique_across_languages(self):
         markers = [m for t in self.tables.values() for m in i18n.era_markers(t)]

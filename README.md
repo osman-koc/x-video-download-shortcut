@@ -1,19 +1,16 @@
 # X Video Downloader (iOS Shortcut)
 
-An iPhone shortcut that downloads the video of an X (Twitter) post. Copy the post link, run the shortcut, pick what you want:
-
-- **Video**: saved to Photos.
-- **GIF**: you choose the section to keep, it is converted and saved to Photos.
+An iPhone shortcut that downloads the video of an X (Twitter) post and saves it to Photos. Copy the post link, run the shortcut, done.
 
 The shortcut is English only. Runtime language detection did not work in Shortcuts, so it was dropped; other translations are kept in the repo for a possible localized build.
 
-> **Status:** on an iPhone the clipboard link, post ID, FxTwitter API, download, menu and saving a video to Photos work. The GIF option is not tested yet. See [Known limitations](#known-limitations) and please open an issue if a step misbehaves.
+> **Status:** on an iPhone the clipboard link, post ID, FxTwitter API, download and saving the video to Photos work. See [Known limitations](#known-limitations) and please open an issue if a step misbehaves.
 
 ## How it works
 
 1. Reads the clipboard and extracts the post ID from an `x.com` / `twitter.com` link. If the clipboard has no valid link, it asks you to paste one.
 2. Queries the public [FxTwitter API](https://github.com/FxEmbed/FxEmbed/wiki/Status-Fetch-API) (`api.fxtwitter.com/status/<id>`) and reads `tweet.media.all[0].url`, a direct MP4. X "GIFs" are MP4s too.
-3. Downloads the MP4 and shows the menu.
+3. Downloads the MP4, saves it to Photos and shows a notification.
 
 How to copy the link on X: tap the share icon below the post, then **Copy link**.
 
@@ -30,16 +27,16 @@ shortcuts sign --mode anyone \
 
 AirDrop `dist/X-Video-Downloader.shortcut` to the iPhone and open it in the Shortcuts app. On first run allow network access (`api.fxtwitter.com`, `video.twimg.com`) and Photos access. If iOS asks about pasting from the clipboard, choose **Allow Paste** (or set it to *Allow* in Settings > Apps > Shortcuts > Paste from Other Apps).
 
-To troubleshoot, build with `--debug`: it shows the value of each key step (clipboard, post ID, API code, media URL, chosen action) in popups.
+To troubleshoot, build with `--debug`: it shows the value of each key step (clipboard, post ID, API code, media URL, saved to Photos) in popups.
 
 ## Usage
 
-- **Video**: pick *Video*.
-- **GIF**: pick *GIF*, drag the handles in the trim screen to select the part to keep (shorter clips make smaller GIFs; a few seconds works best), confirm.
+Copy the link of an X post that has a video, then run the shortcut. The video appears in Photos.
 
-### WhatsApp stickers
+### Not supported
 
-Not supported. WhatsApp's own sticker maker on iPhone does not accept videos or GIFs, and Shortcuts cannot add stickers to WhatsApp. Animated stickers need a third-party sticker app. The shortcut only saves the video or GIF to Photos, which such apps can import.
+- **GIF conversion**: saving the GIF to Photos did not work, so it was removed.
+- **WhatsApp stickers**: WhatsApp's sticker maker on iPhone does not accept videos or GIFs, and Shortcuts cannot add stickers to WhatsApp. Animated stickers need a third-party sticker app, which can import the saved video from Photos.
 
 ## Build from source
 
