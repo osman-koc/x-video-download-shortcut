@@ -117,8 +117,14 @@ class IfBlock:
 
 
 class Builder:
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
         self.actions: List[Action] = []
+        self.debug = debug
+
+    def trace(self, label: str, value: Ref) -> None:
+        """In debug builds, show `label: value` on screen (to find where a run goes wrong)."""
+        if self.debug:
+            self.add("showresult", {"Text": text(label + ": ", value)})
 
     def add(self, name: str, params: Optional[Dict[str, Any]] = None, output_name: str = "Result") -> Action:
         action = Action(name, dict(params or {}), output_name)

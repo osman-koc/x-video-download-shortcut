@@ -97,6 +97,7 @@ def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
     clipboard = b.set_var("clipboard", b.add("getclipboard", {}, "Clipboard").out)
     # The clipboard may hold a URL or rich text item; match against plain text.
     clip_text = b.add("detect.text", {"WFInput": clipboard.attachment()}, "Text").out
+    b.trace("clipboard", clip_text)
     matches = _extract_tweet_id(b, clip_text)
     b.set_var("matches", matches)
 
@@ -120,7 +121,9 @@ def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
         },
         "Group",
     )
-    return b.set_var("tweet_id", group.out)
+    tweet_id = b.set_var("tweet_id", group.out)
+    b.trace("tweet_id", tweet_id)
+    return tweet_id
 
 
 def _fetch_video_url(b: Builder, s: Dict[str, Ref], tweet_id: Ref) -> Ref:
@@ -130,10 +133,13 @@ def _fetch_video_url(b: Builder, s: Dict[str, Ref], tweet_id: Ref) -> Ref:
         "Contents of URL",
     )
     parsed = b.add("detect.dictionary", {"WFInput": response.out.attachment()}, "Dictionary")
+    if b.debug:
+        b.trace("api code", _dict_value(b, parsed.out, "code"))
     post = _dict_value(b, parsed.out, "tweet")
     media = _dict_value(b, post, "media")
     # `all` keeps the post's media in order; a post holds either photos or one video/GIF.
     items = b.set_var("media_items", _dict_value(b, media, "all"))
+    b.trace("media items", items)
 
     with b.if_(items, "Does Not Have Any Value"):
         _fail(b, s, "err_no_video")
@@ -145,10 +151,12 @@ def _fetch_video_url(b: Builder, s: Dict[str, Ref], tweet_id: Ref) -> Ref:
     )
     first_item = b.set_var("first_media", first.out)
     kind = b.set_var("media_type", _dict_value(b, first_item, "type"))
+    b.trace("media_type", kind)
     with b.if_(kind, "Contains", "photo"):
         _fail(b, s, "err_no_video")
 
     video_url = b.set_var("video_url", _dict_value(b, first_item, "url"))
+    b.trace("video_url", video_url)
     with b.if_(video_url, "Does Not Have Any Value"):
         _fail(b, s, "err_no_video")
     return video_url

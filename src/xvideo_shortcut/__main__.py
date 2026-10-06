@@ -14,8 +14,8 @@ ICON_COLOR = 4282601983
 ICON_GLYPH = 59511  # download arrow
 
 
-def build_shortcut() -> bytes:
-    builder = Builder()
+def build_shortcut(debug: bool = False) -> bytes:
+    builder = Builder(debug=debug)
     build_flow(builder, i18n.load_translations())
     return builder.dumps(ICON_COLOR, ICON_GLYPH)
 
@@ -32,6 +32,11 @@ def main(argv=None) -> int:
         metavar="PATH",
         help="Write the Jellycuts script (Jelly language) instead of the .shortcut file.",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Add on-screen result popups after key steps (for troubleshooting).",
+    )
     args = parser.parse_args(argv)
 
     if args.jelly:
@@ -43,7 +48,7 @@ def main(argv=None) -> int:
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(build_shortcut())
+    out.write_bytes(build_shortcut(debug=args.debug))
     print(f"Wrote {out} ({out.stat().st_size} bytes). Sign it before importing on iOS; see README.")
     return 0
 
