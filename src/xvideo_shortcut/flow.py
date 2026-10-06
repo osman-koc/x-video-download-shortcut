@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import Dict
 
 from . import i18n
@@ -41,38 +40,43 @@ def _localize(b: Builder, tables: Dict[str, Dict[str, object]]) -> Dict[str, Ref
 
     The era of the Gregorian calendar ("AD", "MS", "n. Chr." ...) is spelled
     per locale but never changes with the date, so formatting today's date
-    with the era pattern reveals the device language.
+    with the era pattern reveals the device language. English is assigned
+    first and stays if no other language is recognized.
     """
+    keys = i18n.string_keys(tables)
+    english = tables[i18n.DEFAULT_LANGUAGE]
+
+    def assign(table: Dict[str, object]) -> None:
+        for key in keys:
+            b.add("gettext", {"WFTextActionText": str(table[key])}, "Text")
+            b.set_var("s_" + key, b.actions[-1].out)
+
     b.add("gettext", {"WFTextActionText": i18n.DEFAULT_LANGUAGE}, "Text")
     lang = b.set_var("lang", b.actions[-1].out)
+    assign(english)
 
-    now = b.add("date", {"WFDateActionMode": "Current Date"}, "Date")
+    # Format Date takes today's date from the previous action.
+    b.add("date", {"WFDateActionMode": "Current Date"}, "Date")
     era = b.add(
         "format.date",
-        {"WFDate": now.out.attachment(), "WFDateFormatStyle": "Custom", "WFDateFormat": "G"},
+        {"WFDateFormatStyle": "Custom", "WFDateFormat": "G"},
         "Formatted Date",
     )
     era_var = b.set_var("era", era.out)
 
     for code, table in tables.items():
+        if code == i18n.DEFAULT_LANGUAGE:
+            continue
         for marker in i18n.era_markers(table):
             with b.if_(era_var, "Contains", marker):
                 b.add("gettext", {"WFTextActionText": code}, "Text")
                 b.set_var("lang", b.actions[-1].out)
+                assign(table)
 
-    payload = {code: {k: v for k, v in t.items() if k != i18n.MARKER_KEY} for code, t in tables.items()}
-    b.add("gettext", {"WFTextActionText": json.dumps(payload, ensure_ascii=False)}, "Text")
-    b.add("detect.dictionary", {}, "Dictionary")
-    all_strings = b.set_var("all_strings")
-    table = b.set_var("strings", _dict_value(b, all_strings, text(lang)))
-
-    refs: Dict[str, Ref] = {}
-    for key in i18n.string_keys(tables):
-        refs[key] = b.set_var("s_" + key, _dict_value(b, table, key))
     b.trace("era", era_var)
     b.trace("lang", lang)
-    b.trace("app_name string", refs["app_name"])
-    return refs
+    b.trace("app_name string", Ref.variable("s_app_name"))
+    return {key: Ref.variable("s_" + key) for key in keys}
 
 
 def _fail(b: Builder, s: Dict[str, Ref], message_key: str) -> None:
@@ -186,29 +190,37 @@ def _choose_action(b: Builder, tables: Dict[str, Dict[str, object]]) -> Ref:
     Menu titles must be literal text, so each language gets its own menu; all of them
     write the same codes to `action`, which the rest of the shortcut branches on.
     """
+    def menu(table: Dict[str, object]) -> None:
+        group = new_uuid()
+        titles = [str(table[k]) for k in OPTION_KEYS]
+        b.add(
+            "choosefrommenu",
+            {
+                "GroupingIdentifier": group,
+                "WFControlFlowMode": 0,
+                "WFMenuPrompt": str(table["choose_prompt"]),
+                "WFMenuItems": titles,
+            },
+        )
+        for title, action_code in zip(titles, ACTION_CODES):
+            b.add(
+                "choosefrommenu",
+                {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
+            )
+            b.add("gettext", {"WFTextActionText": action_code}, "Text")
+            b.set_var("action", b.actions[-1].out)
+        b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
+
     lang = Ref.variable("lang")
     for code, table in tables.items():
         with b.if_(lang, "Contains", code):
-            group = new_uuid()
-            titles = [str(table[k]) for k in OPTION_KEYS]
-            b.add(
-                "choosefrommenu",
-                {
-                    "GroupingIdentifier": group,
-                    "WFControlFlowMode": 0,
-                    "WFMenuPrompt": str(table["choose_prompt"]),
-                    "WFMenuItems": titles,
-                },
-            )
-            for title, action_code in zip(titles, ACTION_CODES):
-                b.add(
-                    "choosefrommenu",
-                    {"GroupingIdentifier": group, "WFControlFlowMode": 1, "WFMenuItemTitle": title},
-                )
-                b.add("gettext", {"WFTextActionText": action_code}, "Text")
-                b.set_var("action", b.actions[-1].out)
-            b.add("choosefrommenu", {"GroupingIdentifier": group, "WFControlFlowMode": 2})
-    return Ref.variable("action")
+            menu(table)
+
+    # Safety net: if no language branch matched, show the English menu.
+    action = Ref.variable("action")
+    with b.if_(action, "Does Not Have Any Value"):
+        menu(tables[i18n.DEFAULT_LANGUAGE])
+    return action
 
 
 def build_flow(b: Builder, tables: Dict[str, Dict[str, object]]) -> None:
