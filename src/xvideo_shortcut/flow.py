@@ -86,7 +86,7 @@ def _extract_tweet_id(b: Builder, source: Ref) -> Ref:
         {
             "WFMatchTextPattern": TWEET_ID_PATTERN,
             "WFMatchTextCaseSensitive": False,
-            "text": source.attachment(),
+            "text": text(source),
         },
         "Matches",
     ).out
@@ -100,6 +100,7 @@ def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
     b.trace("clipboard", clip_text)
     matches = _extract_tweet_id(b, clip_text)
     b.set_var("matches", matches)
+    b.trace("matches", matches)
 
     with b.if_(Ref.variable("matches"), "Does Not Have Any Value"):
         asked = b.add(
