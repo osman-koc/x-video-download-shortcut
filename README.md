@@ -21,15 +21,20 @@
 
 ## How to use
 
-1. In the X app, tap the share icon below a post with a video, then **Copy link**.
-2. Run **X Video Downloader** (from the Shortcuts app, or add it to the Home Screen or Siri).
+**From the X app (Share Sheet):**
+1. Tap the share icon below a post with a video, then **Share via...** (or the system share button).
+2. Pick **X Video Downloader** in the share sheet. If it is not in the first row, tap **More** and enable it under **Favorites**.
 3. The video is saved to Photos and a notification confirms it.
 
-If the clipboard has no X post link, the shortcut asks you to paste one. If iOS asks about pasting from the clipboard, choose **Allow Paste** (or Settings > Apps > Shortcuts > Paste from Other Apps > *Allow*).
+**From the clipboard:**
+1. Tap the share icon, then **Copy link**.
+2. Run **X Video Downloader** from the Shortcuts app, the Home Screen or Siri.
+
+If neither the shared item nor the clipboard has an X post link, the shortcut asks you to paste one. If iOS asks about pasting from the clipboard, choose **Allow Paste** (or Settings > Apps > Shortcuts > Paste from Other Apps > *Allow*).
 
 ## How it works
 
-1. Reads the clipboard and extracts the post ID from an `x.com` / `twitter.com` link.
+1. Takes the link shared from the X app, or the clipboard if nothing was shared, and extracts the post ID from an `x.com` / `twitter.com` link.
 2. Queries the public [FxTwitter API](https://github.com/FxEmbed/FxEmbed/wiki/Status-Fetch-API) (`api.fxtwitter.com/status/<id>`) and reads `tweet.media.all[0].url`, a direct MP4. X "GIFs" are MP4s too.
 3. Downloads the MP4, saves it to Photos and shows a notification.
 

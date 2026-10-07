@@ -65,12 +65,19 @@ def _extract_tweet_id(b: Builder, source: Ref) -> Ref:
 
 
 def _resolve_tweet_id(b: Builder, s: Dict[str, Ref]) -> Ref:
-    """Use the clipboard if it holds a post link, otherwise ask for one."""
-    clipboard = b.set_var("clipboard", b.add("getclipboard", {}, "Clipboard").out)
-    # The clipboard may hold a URL or rich text item; match against plain text.
-    clip_text = b.add("detect.text", {"WFInput": clipboard.attachment()}, "Text").out
-    b.trace("clipboard", clip_text)
-    matches = _extract_tweet_id(b, clip_text)
+    """Find the post link: shared input first, then the clipboard, then ask."""
+    # Link shared from the X app via the Share Sheet (empty when run on its own).
+    shared = b.add("detect.text", {"WFInput": Ref.shortcut_input().attachment()}, "Text").out
+    source = b.set_var("source_text", shared)
+
+    with b.if_(source, "Does Not Have Any Value"):
+        clipboard = b.set_var("clipboard", b.add("getclipboard", {}, "Clipboard").out)
+        # The clipboard may hold a URL or rich text item; match against plain text.
+        clip_text = b.add("detect.text", {"WFInput": clipboard.attachment()}, "Text").out
+        b.set_var("source_text", clip_text)
+
+    b.trace("source", source)
+    matches = _extract_tweet_id(b, source)
     b.set_var("matches", matches)
     b.trace("matches", matches)
 

@@ -72,6 +72,12 @@ class PlistStructure(unittest.TestCase):
                     stack.pop()
         self.assertEqual(stack, [])
 
+    def test_is_offered_in_the_share_sheet_for_links_and_text(self):
+        data = plistlib.loads(build_shortcut())
+        self.assertIn("ActionExtension", data["WFWorkflowTypes"])
+        self.assertIn("WFURLContentItem", data["WFWorkflowInputContentItemClasses"])
+        self.assertIn("WFStringContentItem", data["WFWorkflowInputContentItemClasses"])
+
     def test_saves_the_video_to_photos(self):
         ids = [a["WFWorkflowActionIdentifier"].rsplit(".", 1)[-1] for a in self.actions]
         self.assertIn("savetocameraroll", ids)

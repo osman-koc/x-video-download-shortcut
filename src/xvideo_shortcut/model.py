@@ -33,6 +33,11 @@ class Ref:
         return cls({"Type": "Variable", "VariableName": name})
 
     @classmethod
+    def shortcut_input(cls) -> "Ref":
+        """What the Share Sheet (or caller) passed to the shortcut."""
+        return cls({"Type": "ExtensionInput"})
+
+    @classmethod
     def output(cls, action_uuid: str, name: str) -> "Ref":
         return cls({"Type": "ActionOutput", "OutputUUID": action_uuid, "OutputName": name})
 
@@ -152,8 +157,9 @@ class Builder:
                 "WFWorkflowIconGlyphNumber": icon_glyph,
             },
             "WFWorkflowImportQuestions": [],
-            "WFWorkflowInputContentItemClasses": [],
-            "WFWorkflowTypes": [],
+            # Accept links and text from the Share Sheet.
+            "WFWorkflowInputContentItemClasses": ["WFURLContentItem", "WFStringContentItem"],
+            "WFWorkflowTypes": ["ActionExtension"],
             "WFWorkflowActions": [a.to_plist() for a in self.actions],
         }
 
