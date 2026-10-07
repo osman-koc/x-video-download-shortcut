@@ -10,12 +10,12 @@
 </p>
 
 <p align="center">
-  <a href="https://www.icloud.com/shortcuts/48c9fcb7dbf34f48bce0a79a78532b22"><b>Add to Shortcuts</b></a>
+  <a href="https://www.icloud.com/shortcuts/d487a81f9f36400188dbe193e11026ba"><b>Add to Shortcuts</b></a>
 </p>
 
 ## Get the shortcut
 
-1. Open this link on your iPhone: **[Add to Shortcuts](https://www.icloud.com/shortcuts/48c9fcb7dbf34f48bce0a79a78532b22)**
+1. Open this link on your iPhone: **[Add to Shortcuts](https://www.icloud.com/shortcuts/d487a81f9f36400188dbe193e11026ba)**
 2. Tap **Add Shortcut**.
 3. First run: allow network access (`api.fxtwitter.com`, `video.twimg.com`) and Photos access.
 
@@ -50,7 +50,7 @@ cd x-video-download-shortcut
 
 This writes `dist/X Video Downloader.shortcut`. Open it on the Mac, or AirDrop it to the iPhone. The file name is the shortcut's name in the Shortcuts app, so keep it as is.
 
-The iCloud link above was made from a signed build: open the shortcut in the Shortcuts app, tap **Share > Copy iCloud Link**. If you rebuild the shortcut, update that link.
+The iCloud link above was made from a signed build: open the shortcut in the Shortcuts app, tap **Share > Copy iCloud Link**. If you rebuild the shortcut, publish a new link and update it here.
 
 ## Not supported
 
